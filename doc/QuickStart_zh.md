@@ -37,9 +37,15 @@ DBRL提供了<a href="https://github.com/openai/gym">OpenAI Gym</a>格式的强�
 register(
     id="DBRL-v0",
     entry_point="gym.envs.{jsbsim/dogfight}Env:{JSBSim/Dogfight}Env",
-    max_episode_steps=200,
+    max_episode_steps=10000,
     reward_threshold=100.0,
 )
+```
+
+如需查看`gym`源文件地址，可以运行如下代码：
+
+```bash
+pip show gym
 ```
 
 调用环境时可以采用如下代码：
@@ -50,12 +56,6 @@ import gym
 env = gym.make('DBRL-v0')
 ```
 
-如需查看`gym`源文件地址，可以运行如下代码：
-
-```bash
-pip show gym
-```
-
 如果不从`Gym`库直接调用环境，也可以直接使用环境类的实例，可以采用如下代码：
 
 ```python
@@ -63,6 +63,5 @@ from DBRL.src.environments import jsbsimEnv as Env
 
 env = Env.Env()
 ```
-
 
 </details>
