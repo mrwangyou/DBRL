@@ -38,7 +38,7 @@ class JsbsimEnv(Env):
             low=np.array([[
                 -360,  # Latitude 纬度
                 -360,  # Longitude 经度
-                0,     # Height abouve sea level 海拔
+                0,     # Height above sea level 海拔
                 -360,  # Yaw 偏航角
                 -360,  # Pitch 俯仰角
                 -360,  # Roll 翻滚角
