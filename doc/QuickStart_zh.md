@@ -35,7 +35,7 @@ import jsbsim
 print(jsbsim.get_default_root_dir())
 ```
 
-在需要可视化的接战仿真中，请在FlightGear启动时使用如下参数
+在需要可视化的接战仿真中，请在FlightGear启动时使用如下参数：
 
 ```bash
 --fdm=null --native-fdm=socket,in,60,,5550,udp
@@ -49,7 +49,19 @@ print(jsbsim.get_default_root_dir())
 ```bash
 --fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10.127.0.0.1,5001 --multiplay=in,10.127.0.0.1,5000 --callsign=Test2
 ```
-参数
+参数。
+
+如需使用本项目中的强化学习模型，请将本项目文件夹置于JSBSim目录下，即：
+
+```
+JSBSim/
+└── DBRL/
+    ├── doc/
+    ├── log/
+    ├── src/
+    ├── test/
+    └── ...
+```
 
 </details>
 
