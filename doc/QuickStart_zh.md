@@ -165,6 +165,15 @@ class JsbsimFdm():
 ```
 其中：`fdm_id`表示接战中飞机的编号，需要分别设置为`1`与`2`；`fdm_aircraft`表示接战中飞机的型号；`fdm_ic_*`表示飞机的初始化特征；`fdm_ic_v`表示飞机的初始校正空速，单位为节（knot）；`fdm_ic_lat`表示飞机的初始纬度；`fdm_ic_long`表示飞机的初始经度；`fdm_ic_h`表示飞机的初始海拔高度，单位为英尺；`fdm_ic_psi`、`fdm_ic_theta`、`fdm_ic_phi`分别表示飞机的偏航角，俯仰角与翻滚角，值得注意的是，模型将按照此处列出的三个欧拉角的先后顺序进行飞机姿态的计算；`fdm_hp`表示飞机的初始血量；`fdm_fgfs`表示飞机是否需要在FlightGear上进行可视化；`flight_mode`表示飞行模式（预留变量，暂无效果）。
 
+DBRL提供的回报函数为当前帧对敌机造成的血量损失大小，但也同样可以用JSBSimFdm类的`getProperty()`函数获得一些其他特征作为不同强化学习模型的回报函数。
+
+```python
+def getProperty(
+        self,
+        prop,
+    ) -> list:
+```
+
 </details>
 
 

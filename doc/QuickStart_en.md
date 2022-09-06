@@ -164,6 +164,15 @@ class JsbsimFdm():
 ```
 `fdm_id` represents the number of aircraft, which needs to be set to `1` or `2`. `fdm_aircraft` represents the aircraft used in the engagement. `fdm_ic_v` represents the initial calibrated velocity. `fdm_ic_lat` represents the initial latitude. `fdm_ic_long` represents the initial longitude. `fdm_ic_h` represents the initial height. `fdm_ic_psi`, `fdm_ic_theta` and `fdm_ic_phi` represents the initial yaw, pitch and roll angle of the aircraft. `fdm_hp` represents the initial health point. `fdm_fgfs` denotes whether the aircraft will be visualized in FlightGear.
 
+The reward function of DBRL are set to be the damage ego plane takes to the opposite. Various reward function could be customized by `getProperty` function of class JSBSimFdm.
+
+```python
+def getProperty(
+        self,
+        prop,
+    ) -> list:
+```
+
 </details>
 
 

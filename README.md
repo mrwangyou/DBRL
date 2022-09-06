@@ -4,4 +4,4 @@ Reorganizing from [IDSD](https://github.com/mrwangyou/IDSD)... Will be completed
 
 [Reference Manual](doc/QuickStart_en.md) | [简体中文使用手册](doc/QuickStart_zh.md)
 
-### We're looking forward to your contribution, such as your air combat reinforcement learning models, to this dogfight benchmark. If you are interesting in this project, feel free to contact `mrwangyou [at] stu [dot] xjtu [dot] edu [dot] cn`.
+<b> We're looking forward to your contribution, such as your air combat reinforcement learning models, to this dogfight benchmark. If you are interesting in this project, feel free to contact `mrwangyou [at] stu [dot] xjtu [dot] edu [dot] cn`. </b>
