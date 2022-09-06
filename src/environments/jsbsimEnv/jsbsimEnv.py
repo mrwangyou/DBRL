@@ -1,4 +1,5 @@
 import random
+import sys
 import time
 
 import gym
@@ -6,7 +7,10 @@ import numpy as np
 from gym import Env
 from gym.spaces import Box, Discrete
 
+sys.path.append('./src/environments/jsbsimEnv')
+
 from jsbsimFdm import JsbsimFdm as Fdm
+
 
 class JsbsimEnv(Env):
 
@@ -115,6 +119,8 @@ class JsbsimEnv(Env):
             if -1 <= angle2 / np.pi * 180 <= 1:
                 if ego == 1:
                     return (3000 - self.getDistance()) / 2500 / 120
+            
+        return 0
     
     def damage(self):
         self.fdm1.damage(self.getDamage(1))
@@ -122,13 +128,10 @@ class JsbsimEnv(Env):
 
     def terminate(self):
         if self.fdm1.fdm_hp <= 0 and self.fdm2.fdm_hp > 0:
-            # self.file.close()
             return 2
         elif self.fdm2.fdm_hp <= 0 and self.fdm1.fdm_hp > 0:
-            # self.file.close()
             return 1
         elif self.fdm1.fdm_hp <= 0 and self.fdm2.fdm_hp <= 0:
-            # self.file.close()
             return -1
         else:
             return 0
