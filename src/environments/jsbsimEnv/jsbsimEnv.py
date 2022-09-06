@@ -9,7 +9,10 @@ from gym.spaces import Box, Discrete
 
 sys.path.append('./src/environments/jsbsimEnv')
 
-from jsbsimFdm import JsbsimFdm as Fdm
+try:
+    from jsbsimFdm import JsbsimFdm as Fdm
+except:
+    from gym.envs.jsbsimEnv.jsbsimFdm import JsbsimFdm as Fdm
 
 
 class JsbsimEnv(Env):

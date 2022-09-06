@@ -73,7 +73,7 @@ DBRL build the reinforcement learning environment in <a href="https://github.com
 ```python
 register(
     id="DBRL-v0",
-    entry_point="gym.envs.{jsbsim/dogfight}Env:{JSBSim/Dogfight}Env",
+    entry_point="gym.envs.{jsbsim/dogfight}Env:{Jsbsim/Dogfight}Env",
     max_episode_steps=10000,
     reward_threshold=100.0,
 )

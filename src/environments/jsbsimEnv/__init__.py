@@ -1,4 +1,7 @@
-from src.environments.jsbsimEnv.jsbsimEnv import JsbsimEnv as Env
-from src.environments.jsbsimEnv.jsbsimFdm import JsbsimFdm as Fdm
-
+try:
+    from src.environments.jsbsimEnv.jsbsimEnv import JsbsimEnv
+    from src.environments.jsbsimEnv.jsbsimFdm import JsbsimFdm
+except:
+    from gym.envs.jsbsimEnv.jsbsimEnv import JsbsimEnv
+    from gym.envs.jsbsimEnv.jsbsimFdm import JsbsimFdm
 
