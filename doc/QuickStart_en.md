@@ -43,11 +43,11 @@ Run FlightGear with the attributes below.
 If you want to visualize two aircraft, use the attributes below in two FlightGear separately.
 
 ```bash
---fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10.127.0.0.1,5000 --multiplay=in,10.127.0.0.1,5001 --callsign=Test1
+--fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10,127.0.0.1,5000 --multiplay=in,10,127.0.0.1,5001 --callsign=Test1
 ```
 
 ```bash
---fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10.127.0.0.1,5001 --multiplay=in,10.127.0.0.1,5000 --callsign=Test2
+--fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10,127.0.0.1,5001 --multiplay=in,10,127.0.0.1,5000 --callsign=Test2
 ```
 
 If you want to run the reinforcement learning methods DBRL, please put this project in `JSBSim/`.

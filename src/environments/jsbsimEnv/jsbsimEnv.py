@@ -1,4 +1,5 @@
 import random
+import re
 import sys
 import time
 
@@ -8,56 +9,67 @@ from gym import Env
 from gym.spaces import Box, Discrete
 
 sys.path.append('./src/environments/jsbsimEnv')
-
 try:
     from jsbsimFdm import JsbsimFdm as Fdm
+    print("DBRL")
+    time.sleep(1)
 except:
     from gym.envs.jsbsimEnv.jsbsimFdm import JsbsimFdm as Fdm
+    print("Gym")
+    time.sleep(1)
 
 
 class JsbsimEnv(Env):
 
     def __init__(
         self,
-        fdm1=Fdm(fdm_id=1),
-        fdm2=Fdm(fdm_id=2),
+        fdm1=Fdm(
+            fdm_id=1,
+            fdm_fgfs=True
+        ),
+        fdm2=Fdm(
+            fdm_id=2,
+            fdm_ic_lat=.003,
+            fdm_ic_psi=180,
+            fdm_fgfs=True
+        ),
     ) -> None:
 
         self.fdm1 = fdm1
         self.fdm2 = fdm2
 
         self.action_space = Box(
-            low=np.array([[
+            low=np.array([
                 -1,  # Aileron 副翼
                 -1,  # Elevator 升降舵
                 -1,  # Rudder 方向舵
                 0,   # Throttle 油门
-            ]] * 2),
-            high=np.array([[
+            ]),
+            high=np.array([
                 1,
                 1,
                 1,
                 1,
-            ]] * 2),
+            ]),
         )
 
         self.observation_space = Box(
-            low=np.array([[
+            low=np.array([
                 -360,  # Latitude 纬度
                 -360,  # Longitude 经度
                 0,     # Height above sea level 海拔
                 -360,  # Yaw 偏航角
                 -360,  # Pitch 俯仰角
                 -360,  # Roll 翻滚角
-            ]] * 2),
-            high=np.array([[
+            ] * 2),
+            high=np.array([
                 360,
                 360,
                 60000,
                 360,
                 360,
                 360,
-            ]] * 2)
+            ] * 2)
         )
 
     def getDistanceVector(self, ego):
@@ -130,6 +142,10 @@ class JsbsimEnv(Env):
         self.fdm2.damage(self.getDamage(2))
 
     def terminate(self):
+
+        if self.fdm1.getProperty('position')[2] <= 1000:
+            return 1
+
         if self.fdm1.fdm_hp <= 0 and self.fdm2.fdm_hp > 0:
             return 2
         elif self.fdm2.fdm_hp <= 0 and self.fdm1.fdm_hp > 0:
@@ -141,12 +157,26 @@ class JsbsimEnv(Env):
 
     def step(self, action):
         
-        self.fdm1.sendAction(action[0])
-        self.fdm2.sendAction(action[1])
+        self.fdm1.sendAction(action)
 
         self.damage()
         
-        return [self.fdm1.getProperty('pose'), self.fdm1.getProperty('pose')], [self.getDamage(2), self.getDamage(1)], self.fdm1.terminate() or self.fdm2.terminate(), {}
+        self.fdm1.step()
+        self.fdm2.step()
+
+        if self.terminate() == 2:
+            reward = -10
+        elif self.terminate() == 1:
+            reward = 10
+        elif self.terminate() == -1:
+            reward = 0
+        else:
+            reward = self.getDamage(2) - self.getDamage(1)
+
+
+        terminate = True if self.terminate() else False
+        
+        return self.fdm1.getProperty('pose') + self.fdm2.getProperty('pose'), reward, terminate, {}
 
     def render(self, id=0):
 
@@ -158,12 +188,30 @@ class JsbsimEnv(Env):
 
     def reset(
         self,
-        fdm1=Fdm(fdm_id=1),
-        fdm2=Fdm(fdm_id=2),
+        fdm1=Fdm(
+            fdm_id=1,
+            fdm_fgfs=True
+        ),
+        fdm2=Fdm(
+            fdm_id=2,
+            fdm_ic_lat=.003,
+            fdm_ic_psi=180,
+            fdm_fgfs=True
+        ),
     ):
         del self.fdm1, self.fdm2
-        self.fdm1 = fdm1
-        self.fdm2 = fdm2
-
-        return [self.fdm1.getProperty('pose'), self.fdm1.getProperty('pose')]
+        
+        self.fdm1 = Fdm(
+            fdm_id=1,
+            fdm_fgfs=True
+        )
+        self.fdm2 = Fdm(
+            fdm_id=2,
+            fdm_ic_lat=.003,
+            fdm_ic_psi=180,
+            fdm_fgfs=True
+        )
+        
+        print("Reset!")
+        return self.fdm1.getProperty('pose') + self.fdm2.getProperty('pose')
 

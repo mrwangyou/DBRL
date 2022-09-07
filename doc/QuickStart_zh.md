@@ -43,11 +43,11 @@ print(jsbsim.get_default_root_dir())
 
 在同时对两架飞机可视化的仿真中，请分别使用
 ```bash
---fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10.127.0.0.1,5000 --multiplay=in,10.127.0.0.1,5001 --callsign=Test1
+--fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10,127.0.0.1,5000 --multiplay=in,10,127.0.0.1,5001 --callsign=Test1
 ```
 与
 ```bash
---fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10.127.0.0.1,5001 --multiplay=in,10.127.0.0.1,5000 --callsign=Test2
+--fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10,127.0.0.1,5001 --multiplay=in,10,127.0.0.1,5000 --callsign=Test2
 ```
 参数。
 
