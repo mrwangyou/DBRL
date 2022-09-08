@@ -23,8 +23,12 @@ wget -Uri https://github.com/harfang3d/dogfight-sandbox-hg2/releases/download/1.
 7z x -odf2/ df2.7z
 
 mv ./df2/dogfight-sandbox-hg2/ {DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg2/
+
+del df2/, df2.7z
 ```
 Replace `{DBRL}` with the path of this project. 
+
+If you want to build the Gym environment with `Gym.make`, you need to replace `import socket_lib` with `from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib` in `{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`. We are trying to simplify this step.
 
 If you want to visualize the aircraft model in FlightGear while running the FDM with the JSBSim executable, please download FlightGear following the instructions on the <a href="https://www.flightgear.org/">FlightGear website</a>. If you need to visualize the two aircrafts in an engagement simultaneously, please copy two `{JSBSim}/data_output/flightgear.xml`, name them `flightgear{1/2}.xml`, and replace `5550` in line 18 of `flightgear2.xml` to `5551`. `{JSBSim}` represents the path of Python JSBSim. You could run the code below to get the default JSBSim path.
 
@@ -72,10 +76,8 @@ DBRL build the reinforcement learning environment in <a href="https://github.com
 
 ```python
 register(
-    id="DBRL-v0",
+    id="DBRL{Jsbsim/Dogfight}-v0",
     entry_point="gym.envs.{jsbsim/dogfight}Env:{Jsbsim/Dogfight}Env",
-    max_episode_steps=10000,
-    reward_threshold=100.0,
 )
 ```
 
@@ -90,7 +92,7 @@ After that, you could use DBRL environments with Gym in the way like following.
 ```python
 import gym
 
-env = gym.make('DBRL-v0')
+env = gym.make('DBRL{Jsbsim/Dogfight}-v0')
 ```
 
 You could also use an instance of the environment class with out register.
@@ -107,22 +109,22 @@ env = Env.Env()
 <details open>
 <summary>Property</summary>
 
-The action space of DBRL are:
+The action space of DBRL-JSBSim is:
 
 ```python
 gym.spaces.Box(
-    low=np.array([[-1, -1, -1, 0]] * 2),
-    high=np.array([[1, 1, 1, 1]] * 2)
+    low=np.array([-1, -1, -1, 0]),
+    high=np.array([1, 1, 1, 1])
 )
 ```
 which represents the control of aileron, elevator, rudder and throttle.
 
-The observation space are:
+The observation space is:
 
 ```python
 gym.spaces.Box(
-    low=np.array([[-360, -360, 0, -360, -360, -360]] * 2),
-    high=np.array([[360, 360, 60000, 360, 360, 360]] * 2)
+    low=np.array([-360, -360, 0, -360, -360, -360] * 2),
+    high=np.array([360, 360, 60000, 360, 360, 360] * 2)
 )
 ```
 which represents the latitude(degree), longitude(degree), height above sea level(feet), yaw(degree), pitch(degree) and roll(degree) of the plane. 
@@ -172,6 +174,41 @@ def getProperty(
         prop,
     ) -> list:
 ```
+
+The action space of DBRL-Dogfight is:
+
+```python
+gym.spaces.Box(
+    low=np.array([0, -1, -1, -1]),
+    high=np.array([1, 1, 1, 1])
+)
+```
+which represents the control of flaps, pitch, roll and yaw.
+
+The observation space are:
+
+```python
+gym.spaces.Box(
+    low=np.array([-300, -300, -1, 0, -360, -360, -300, -300, -1, -315, -315, -315]),
+    high=np.array([300, 300, 200, 360, 360, 360, 300, 300, 200, 315, 315, 315])
+)
+```
+which represents the X-coordinate(÷100), Y-coordinate(÷100)、Z-coordinate(÷50), heading, pitch(×4)and roll(×4) of the plane， and the X-coordinate(÷100), Y-coordinate(÷100)、Z-coordinate(÷50), heading(×100), pitch(×100)and roll(×100) of the missile.
+
+DogfightEnv needs to be connected to Dogfight 2. Its constructor function takes host and port as input.
+
+```python
+class DogfightEnv(Env):
+
+    def __init__(
+        self,
+        host='10.184.0.0',
+        port='50888'
+    ) -> None:
+```
+
+You need to start the Dogfight 2 at first and choose the Network mode mission. The host and port IP are in the upper left corner of the screen.
+
 
 </details>
 

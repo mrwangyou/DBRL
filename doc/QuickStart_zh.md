@@ -23,9 +23,12 @@ wget -Uri https://github.com/harfang3d/dogfight-sandbox-hg2/releases/download/1.
 7z x -odf2/ df2.7z
 
 mv ./df2/dogfight-sandbox-hg2/ {DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg2/
+
+del df2/, df2.7z
 ```
 其中`{DBRL}`需要替换为本项目所在的路径，配置7z压缩软件的命令行功能可见[链接](https://www.cnblogs.com/conorblog/p/14543286.html)。
 
+值得注意的是，如果需要使用`Gym.make`搭建环境，需要将生成的`{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`中的`import socket_lib`修改为`from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib`。我们正在尝试简化这步操作。
 
 JSBSim的可视化功能基于FlightGear实现，<u>如需在使用JSBSim的过程中将飞行过程可视化显示</u>，请在<a href="https://www.flightgear.org/">FlightGear官网</a>中安装FlightGear软件。如需对缠斗中的两架飞机分别进行可视化，请在`{JSBSim}/data_output/`下复制两份`flightgear.xml`文件，分别命名为`flightgear{1/2}.xml`，并将`flightgear2.xml`第18行中的`5550`修改为`5551`。其中`{JSBSim}`需要替换为Python JSBSim包所在的路径，如需查看`JSBSim`源文件地址，可以运行如下代码：
 
@@ -73,10 +76,8 @@ DBRL提供了<a href="https://github.com/openai/gym">OpenAI Gym</a>格式的强�
 
 ```python
 register(
-    id="DBRL-v0",
+    id="DBRL{Jsbsim/Dogfight}-v0",
     entry_point="gym.envs.{jsbsim/dogfight}Env:{Jsbsim/Dogfight}Env",
-    max_episode_steps=10000,
-    reward_threshold=100.0,
 )
 ```
 
@@ -91,7 +92,7 @@ pip show gym
 ```python
 import gym
 
-env = gym.make('DBRL-v0')
+env = gym.make('DBRL{Jsbsim/Dogfight}-v0')
 ```
 
 如果不从`Gym`库直接调用环境，也可以直接使用环境类的实例，可以采用如下代码：
@@ -108,12 +109,12 @@ env = Env.Env()
 <details open>
 <summary>环境特征</summary>
 
-DBRL提供了一个基于强化学习框架Gym的智能空战仿真环境，它的动作空间为：
+DBRL-JSBSim提供了一个基于强化学习框架Gym的智能空战仿真环境，它的动作空间为：
 
 ```python
 gym.spaces.Box(
-    low=np.array([[-1, -1, -1, 0]] * 2),
-    high=np.array([[1, 1, 1, 1]] * 2)
+    low=np.array([-1, -1, -1, 0]),
+    high=np.array([1, 1, 1, 1])
 )
 ```
 其中四个维度分别表示对副翼（Aileron）、升降舵（Elevator）、方向舵（Rudder）、油门（Throttle）的操控。
@@ -122,13 +123,11 @@ gym.spaces.Box(
 
 ```python
 gym.spaces.Box(
-    low=np.array([[-360, -360, 0, -360, -360, -360]] * 2),
-    high=np.array([[360, 360, 60000, 360, 360, 360]] * 2)
+    low=np.array([-360, -360, 0, -360, -360, -360] * 2),
+    high=np.array([360, 360, 60000, 360, 360, 360] * 2)
 )
 ```
 其中六个维度分别表示飞机的纬度（Latitude）、经度（Longitude）、海拔（Height above sea level）、偏航角（Yaw）、俯仰角（Pitch）、翻滚角（Roll），单位为度（Degree）与英尺（Feet）。
-
-动作空间与状态空间的外层两个维度分别表示一场接战中的两架飞机。
 
 作为一场接战环境的初始化，`class JSBSimEnv()`接受两个`class JSBSimFdm()`作为输入变量：
 
@@ -173,6 +172,41 @@ def getProperty(
         prop,
     ) -> list:
 ```
+
+DBRL-Dogfight提供了一个基于强化学习框架Gym的战斗机机动躲避智能决策仿真环境，它的动作空间为：
+
+```python
+gym.spaces.Box(
+    low=np.array([0, -1, -1, -1]),
+    high=np.array([1, 1, 1, 1])
+)
+```
+其中四个维度分别表示对襟翼（Flaps）、俯仰角（Pitch）、翻滚角（Roll）、偏航角（Yaw）的操控。
+
+状态空间为：
+
+```python
+gym.spaces.Box(
+    low=np.array([-300, -300, -1, 0, -360, -360, -300, -300, -1, -315, -315, -315]),
+    high=np.array([300, 300, 200, 360, 360, 360, 300, 300, 200, 315, 315, 315])
+)
+```
+其中前六个维度分别表示飞机的X坐标（÷100）、Y坐标（÷100）、Z坐标（÷50）、偏航、俯仰（×4）、滚转（×4），后六个维度分别表示导弹的X坐标（÷100）、Y坐标（÷100）、Z坐标（÷50）、偏航（×100）、俯仰（×100）、滚转（×100）。
+
+DogfightEnv的初始化需要与Dogfight 2软件进行连接，接受如下参数作为输入变量：
+
+```python
+class DogfightEnv(Env):
+
+    def __init__(
+        self,
+        host='10.184.0.0',
+        port='50888'
+    ) -> None:
+```
+
+在使用DogfightEnv环境前，需要启动Dogfight 2软件，并选择Network Mode，将左上角的Host与Port作为参数传进环境中。
+
 
 </details>
 
