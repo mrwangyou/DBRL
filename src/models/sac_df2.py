@@ -1,3 +1,4 @@
+import argparse
 import time
 
 import gym
@@ -5,6 +6,7 @@ import numpy as np
 from stable_baselines3 import SAC
 from stable_baselines3.common.noise import (NormalActionNoise,
                                             OrnsteinUhlenbeckActionNoise)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='TBD')
@@ -38,8 +40,9 @@ model = SAC(
 #     model.set_parameters("sac_df2")
 # except:
 #     pass
-model.learn(total_timesteps=10000000, log_interval=1)
-model.save("sac_df2")
+# model.learn(total_timesteps=10000000, log_interval=1)
+model.learn(total_timesteps=10000, log_interval=1)
+model.save("./log/sac_df2")
 
 # model = DDPG.load("sac_df2")
 
@@ -52,7 +55,7 @@ while True:
     obs, rewards, dones, info = env.step(action)
     env.render()
     if dones == True:
-        f = open('./sac_record.txt', 'a')
+        f = open('./log/sac_record.txt', 'a')
         if rewards == 50:
             win += 1
         summ += 1

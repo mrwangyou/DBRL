@@ -131,3 +131,4 @@ dmypy.json
 # Customized
 bestModel/
 src/environments/dogfightEnv/dogfight_sandbox_hg2/
+log/

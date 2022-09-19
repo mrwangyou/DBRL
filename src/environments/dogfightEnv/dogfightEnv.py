@@ -2,15 +2,18 @@ import random
 import re
 import sys
 import time
+import warnings
 
 import gym
 import numpy as np
 from gym import Env
 from gym.spaces import Box, Discrete
 
-sys.path.append('./src/environments/dogfightEnv')
-sys.path.append('./src/environments/dogfightEnv/dogfight_sandbox_hg2/network_client_example')
-sys.path.append('gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example')
+sys.path.append('./src/')
+sys.path.append('./src/environments/dogfightEnv/')
+sys.path.append('./src/environments/dogfightEnv/dogfight_sandbox_hg2/network_client_example/')
+sys.path.append('gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example/')
+
 
 try:
     from dogfightEnv.dogfight_sandbox_hg2.network_client_example import \
@@ -29,7 +32,8 @@ class DogfightEnv(Env):
     def __init__(
         self,
         host='10.184.0.0',
-        port='50888'
+        port='50888',
+        render=False
     ) -> None:
 
         self.host = host
@@ -99,7 +103,7 @@ class DogfightEnv(Env):
         df.fire_missile(planes[3], missile_slot)
 
         df.set_missile_target(self.missileID, 'ally_2')
-        df.set_missile_life_delay(self.missileID, 40)
+        df.set_missile_life_delay(self.missileID, 30)
 
 
         self.action_space = Box(
@@ -147,6 +151,9 @@ class DogfightEnv(Env):
                 315,
             ])
         )
+
+        if render == True:
+            df.set_renderless_mode(False)
 
     def getProperty(
         self,
@@ -213,9 +220,9 @@ class DogfightEnv(Env):
             raise Exception("Property {} doesn't exist!".format(prop))
 
     def getDistance(self):
-        return ((df.get_plane_state(planeID)['position'][0] - df.get_missile_state(missileID)['position'][0]) ** 2 +\
-        (df.get_plane_state(planeID)['position'][1] - df.get_missile_state(missileID)['position'][1]) ** 2 +\
-        (df.get_plane_state(planeID)['position'][2] - df.get_missile_state(missileID)['position'][2]) ** 2) ** .5
+        return ((df.get_plane_state(self.planeID)['position'][0] - df.get_missile_state(self.missileID)['position'][0]) ** 2 +\
+        (df.get_plane_state(self.planeID)['position'][1] - df.get_missile_state(self.missileID)['position'][1]) ** 2 +\
+        (df.get_plane_state(self.planeID)['position'][2] - df.get_missile_state(self.missileID)['position'][2]) ** 2) ** .5
 
     def getHP(self):
         return df.get_health(self.planeID)['health_level']
@@ -261,6 +268,8 @@ class DogfightEnv(Env):
             reward = -50
         else:
             reward = .1
+            if self.getHP() <= .1:
+                reward = -1
 
         terminate = True if self.terminate() else False
         
