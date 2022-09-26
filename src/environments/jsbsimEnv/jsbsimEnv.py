@@ -29,7 +29,7 @@ class JsbsimEnv(Env):
         ),
         fdm2=Fdm(
             fdm_id=2,
-            fdm_ic_lat=.003,
+            fdm_ic_lat=.01,
             fdm_ic_psi=180,
             fdm_fgfs=True
         ),

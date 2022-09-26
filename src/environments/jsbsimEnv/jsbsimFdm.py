@@ -18,7 +18,7 @@ class JsbsimFdm():
         fdm_ic_phi   = 0,        # Roll 翻滚角，绕X轴
 
         fdm_hp       = 1,
-        fdm_fgfs     = False,
+        fdm_fgfs     = False,    # Visualization
         flight_mode  = 1,        # 0 for flight test
     ) -> None:
         
