@@ -219,6 +219,8 @@ class DogfightEnv(Env):
 
 3. 实现不同强化学习基本模型，复现近年来国内外顶会顶刊上的智能空战算法；
 
+4. 提供多种格式的空战数据输出功能，例如支持JSBSim环境输出至Tacview等；
+
 
 ## <div align="center">欢迎PR</div>
 
