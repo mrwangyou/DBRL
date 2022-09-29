@@ -1,7 +1,8 @@
 <div align="center">
   <h1>DBRL: A Gym <b>D</b>ogfighting Simulation <b>B</b>enchmark for <b>R</b>einforcement <b>L</b>earning Research</h1>
 
-  ## <div align="center">Quick Start</div>
+  <!-- ## <div align="center">Quick Start</div> -->
+  <a align="center" href="https://github.com/mrwangyou/DBRL" target="_blank"><img width="850" src="doc/image/logo.png"></a>
 
   [Reference Manual](doc/QuickStart_en.md) | [简体中文使用手册](doc/QuickStart_zh.md)
 
@@ -106,5 +107,5 @@ action_space = Box(
 
 ## <div align="center">Welcome PR</div>
 
-If you find any mistakes while using, or have any suggestions and advices, please point it out in Github Issues. We're also looking forward to your contributions, such as your air combat reinforcement learning models, to this dogfight benchmark. If you are interesting in this project, feel free to contact `mrwangyou [at] stu [dot] xjtu [dot] edu [dot] cn`.
+If you find any mistakes while using, or have any suggestions and advices, please point it out in Github Issues. We're also looking forward to your contributions, such as your air combat reinforcement learning models, to this dogfight benchmark. If you are interesting in this project, feel free to contact `mrwangyou@stu.xjtu.edu.cn`.
 
