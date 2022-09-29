@@ -9,13 +9,15 @@
 <details open>
 <summary>Install</summary>
 
-DBRL is an air combat simulation benchmark based on <a href="http://jsbsim.sourceforge.net/">JSBSim</a> and <a href="https://github.com/harfang3d/dogfight-sandbox-hg2">Dogfight 2</a>. If you want to run with JSBSim environment, please run the code below.
+DBRL is an air combat simulation benchmark based on <a href="http://jsbsim.sourceforge.net/">JSBSim</a> and <a href="https://github.com/harfang3d/dogfight-sandbox-hg2">Dogfight 2</a>. 
+
+If you want to run with JSBSim dogfight environment, please run the code below to install JSBSim.
 
 ```bash
 pip install jsbsim
 ```
 
-Dogfight 2 environment could only be ran in Windows OS. If you want to run reinforcement learning methods with Dogfight 2 environment, please run the code below in Windows PowerShell.
+Dogfight 2 environment could only run in Windows OS. If you want to run reinforcement learning methods with Dogfight 2 missile-avoiding environment, please run the code below in Windows PowerShell.
 
 ```bash
 wget -Uri https://github.com/harfang3d/dogfight-sandbox-hg2/releases/download/1.0.2/dogfight-sandbox-hg2-win64.7z -OutFile "df2.7z"
@@ -28,7 +30,7 @@ del df2/, df2.7z
 ```
 Replace `{DBRL}` with the path of this project. 
 
-If you want to build the Gym environment with `Gym.make`, you need to replace `import socket_lib` with `from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib` in `{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`. We are trying to simplify this step.
+> If you want to build the Gym environment with `Gym.make`, you need to replace `import socket_lib` with `from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib` in `{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`. We are trying to simplify this step.
 
 If you want to visualize the aircraft model in FlightGear while running the FDM with the JSBSim executable, please download FlightGear following the instructions on the <a href="https://www.flightgear.org/">FlightGear website</a>. If you need to visualize the two aircrafts in an engagement simultaneously, please copy two `{JSBSim}/data_output/flightgear.xml`, name them `flightgear{1/2}.xml`, and replace `5550` in line 18 of `flightgear2.xml` to `5551`. `{JSBSim}` represents the path of Python JSBSim. You could run the code below to get the default JSBSim path.
 
@@ -44,7 +46,7 @@ Run FlightGear with the attributes below.
 --fdm=null --native-fdm=socket,in,60,,5550,udp
 ```
 
-If you want to visualize two aircraft, use the attributes below in two FlightGear separately.
+If you want to visualize two aircraft at the same time, use the attributes below in two FlightGear separately.
 
 ```bash
 --fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10,127.0.0.1,5000 --multiplay=in,10,127.0.0.1,5001 --callsign=Test1
@@ -54,7 +56,7 @@ If you want to visualize two aircraft, use the attributes below in two FlightGea
 --fdm=null --native-fdm=socket,in,60,,5550,udp --multiplay=out,10,127.0.0.1,5001 --multiplay=in,10,127.0.0.1,5000 --callsign=Test2
 ```
 
-If you want to run the reinforcement learning methods DBRL, please put this project in `JSBSim/`.
+If you want to run the reinforcement learning methods in `src/models/*.py`, please put this project in `JSBSim/`.
 
 ```
 JSBSim/
@@ -72,7 +74,7 @@ JSBSim/
 <details open>
 <summary>Adopting</summary>
 
-DBRL build the reinforcement learning environment in <a href="https://github.com/openai/gym">OpenAI Gym</a> form. You could use `gym.make` to build the environment with the following register. 
+DBRL builds the reinforcement learning environment in <a href="https://github.com/openai/gym">OpenAI Gym</a> form. You could use `gym.make` to build the environment with the following register. 
 
 ```python
 register(
@@ -95,19 +97,19 @@ import gym
 env = gym.make('DBRL{Jsbsim/Dogfight}-v0')
 ```
 
-You could also use an instance of the environment class with out register.
+<!-- You could also use an instance of the environment class with out register.
 
 ```python
 from DBRL.src.environments import jsbsimEnv as Env
 
 env = Env.Env()
-```
+``` -->
 
 </details>
 
 
 <details open>
-<summary>Property</summary>
+<summary>Properties</summary>
 
 The action space of DBRL-JSBSim is:
 
@@ -166,7 +168,7 @@ class JsbsimFdm():
 ```
 `fdm_id` represents the number of aircraft, which needs to be set to `1` or `2`. `fdm_aircraft` represents the aircraft used in the engagement. `fdm_ic_v` represents the initial calibrated velocity. `fdm_ic_lat` represents the initial latitude. `fdm_ic_long` represents the initial longitude. `fdm_ic_h` represents the initial height. `fdm_ic_psi`, `fdm_ic_theta` and `fdm_ic_phi` represents the initial yaw, pitch and roll angle of the aircraft. `fdm_hp` represents the initial health point. `fdm_fgfs` denotes whether the aircraft will be visualized in FlightGear.
 
-The reward function of DBRL are set to be the damage ego plane takes to the opposite. Various reward function could be customized by `getProperty` function of class JSBSimFdm.
+The reward function of DBRL are set to be the damage ego plane takes to the opposite minus the opposite takes to the ego. Various reward function could be customized by `getProperty` function of class JSBSimFdm.
 
 ```python
 def getProperty(
@@ -174,6 +176,10 @@ def getProperty(
         prop,
     ) -> list:
 ```
+
+---
+
+DBRL-Dogfight simulate the situation when the plane is confronted with a missile. The agent needs to take actions to avoid the attack of the missile.
 
 The action space of DBRL-Dogfight is:
 
@@ -185,7 +191,7 @@ gym.spaces.Box(
 ```
 which represents the control of flaps, pitch, roll and yaw.
 
-The observation space are:
+The observation space is:
 
 ```python
 gym.spaces.Box(
@@ -195,7 +201,7 @@ gym.spaces.Box(
 ```
 which represents the X-coordinate(÷100), Y-coordinate(÷100)、Z-coordinate(÷50), heading, pitch(×4)and roll(×4) of the plane， and the X-coordinate(÷100), Y-coordinate(÷100)、Z-coordinate(÷50), heading(×100), pitch(×100)and roll(×100) of the missile.
 
-DogfightEnv needs to be connected to Dogfight 2. Its constructor function takes host and port as input.
+DogfightEnv needs to be connected to Dogfight 2 while simulating. Its constructor function takes host and port as input.
 
 ```python
 class DogfightEnv(Env):
@@ -215,9 +221,11 @@ You need to start the Dogfight 2 at first and choose the Network mode mission. T
 
 ## <div align="center">Future works</div>
 
-1. Offer various action spaces and observation spaces to support different RL methods.
+1. Offer various action spaces, observation spaces and reward functions to support different RL methods.
 
 2. Reproduct air combat baseline methods from international conference or journal.
+
+3. Output flight data in various forms to support visualization in different software like Tacview.
 
 
 ## <div align="center">Welcome PR</div>
