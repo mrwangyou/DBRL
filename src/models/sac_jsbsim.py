@@ -1,4 +1,5 @@
 import argparse
+import os
 import time
 
 import gym
@@ -30,6 +31,10 @@ model = SAC(
     verbose=1,
     action_noise=action_noise,
 )
+
+path = r'./log/'
+if not os.path.exists(path):
+    os.mkdir(path)
 
 # try:
 #     model.set_parameters("./log/sac_df2")
