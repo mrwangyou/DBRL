@@ -11,11 +11,13 @@
 
 DBRL基于空气动力学软件<a href="http://jsbsim.sourceforge.net/">JSBSim</a>与<a href="https://github.com/harfang3d/dogfight-sandbox-hg2">Dogfight 2</a>搭建空战仿真平台。
 
-<u>如需使用基于JSBSim搭建的视距内缠斗仿真环境</u>，可以运行如下代码安装JSBSim：
+<u>如需使用基于JSBSim搭建的视距内缠斗仿真环境</u>，可以运行如下代码安装Python-JSBSim：
 
 ```bash
 pip install jsbsim
 ```
+
+安装的JSBSim可能不包括[JSBSim Github页面](https://github.com/JSBSim-Team/jsbsim)中的全部文件，建议您将如上链接中的文件拷贝进`JSBSim`源文件地址中。
 
 Dogfight 2环境仅支持在Windows系统下运行，<u>如需使用基于Dogfight 2搭建的导弹躲避仿真环境</u>，可以在Windows PowerShell中运行如下代码进行软件下载与配置：
 
@@ -61,12 +63,15 @@ print(jsbsim.get_default_root_dir())
 
 ```
 JSBSim/
-└── DBRL/
-    ├── doc/
-    ├── log/
-    ├── src/
-    ├── test/
-    └── ...
+├── DBRL/
+│   ├── doc/
+│   ├── log/
+│   ├── src/
+│   ├── test/
+│   └── ...
+├── aircraft/
+├── scripts/
+└── ...
 ```
 
 </details>
