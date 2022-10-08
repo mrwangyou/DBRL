@@ -14,6 +14,8 @@ DBRL is an air combat simulation benchmark based on <a href="http://jsbsim.sourc
 
 We adopt JSBSim as flight dynamic model to build our dogfight environment, and Dogfight 2 to simulate the situation when the plane is confronted with a missile.
 
+If you are new to air combat simulation or reinforcement learning algorithm, we advise you to learn [DBRL tutorial](tutorial.ipynb) first.
+
 ## <div align="center">Gym Parameters</div>
 
 ```python
