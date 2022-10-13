@@ -199,7 +199,7 @@ gym.spaces.Box(
     high=np.array([300, 300, 200, 360, 360, 360, 300, 300, 200, 315, 315, 315])
 )
 ```
-which represents the X-coordinate(÷100), Y-coordinate(÷100)、Z-coordinate(÷50), heading, pitch(×4)and roll(×4) of the plane， and the X-coordinate(÷100), Y-coordinate(÷100)、Z-coordinate(÷50), heading(×100), pitch(×100)and roll(×100) of the missile.
+which represents the X-coordinate(÷100), Y-coordinate(÷100), Z-coordinate(÷50), heading, pitch(×4) and roll(×4) of the plane, and the X-coordinate(÷100), Y-coordinate(÷100), Z-coordinate(÷50), heading(×100), pitch(×100) and roll(×100) of the missile.
 
 DogfightEnv needs to be connected to Dogfight 2 while simulating. Its constructor function takes host and port as input.
 
