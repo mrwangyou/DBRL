@@ -107,6 +107,7 @@ env = Env.Env()
 
 </details>
 
+You can download pretrained models in [link](https://1drv.ms/u/s!AjYxuXuKCgSEvjodBexf7MkaToL9?e=nREa7B).
 
 <details open>
 <summary>Properties</summary>
