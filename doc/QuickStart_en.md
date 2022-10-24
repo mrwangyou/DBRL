@@ -224,7 +224,7 @@ You need to start the Dogfight 2 at first and choose the Network mode mission. T
 
 1. Offer various action spaces, observation spaces and reward functions to support different RL methods.
 
-2. Reproduct air combat baseline methods from international conference or journal.
+2. Reproduce air combat baseline methods from international conference or journal.
 
 3. Output flight data in various forms to support visualization in different software like Tacview.
 
