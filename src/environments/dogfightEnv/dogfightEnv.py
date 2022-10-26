@@ -16,14 +16,14 @@ sys.path.append('gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_exampl
 
 
 try:
-    from dogfightEnv.dogfight_sandbox_hg2.network_client_example import \
-        dogfight_client as df
-    print("DBRL")
-    time.sleep(1)
-except:
     from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import \
         dogfight_client as df
     print("Gym")
+    time.sleep(1)
+except:
+    from dogfightEnv.dogfight_sandbox_hg2.network_client_example import \
+        dogfight_client as df
+    print("DBRL")
     time.sleep(1)
 
 
