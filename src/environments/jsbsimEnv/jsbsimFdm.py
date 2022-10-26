@@ -51,7 +51,7 @@ class JsbsimFdm():
         self.fdm.run_ic()       ##
         ##########################
 
-        # Engine Turning on 启动引擎
+        # Turning on the Engine 启动引擎
         self.fdm["propulsion/starter_cmd"] = 1
 
         # Refueling 无限燃料
@@ -63,11 +63,27 @@ class JsbsimFdm():
         self.fdm["propulsion/active_engine"] = True
         self.fdm["propulsion/set-running"] = -1
 
-        # Number of frames 帧数
+        # Number of Frames 帧数
         self.nof = 1
 
-        # HP setting 生命值
+        # Setting HP 生命值
         self.fdm_hp = fdm_hp
+
+        # Getting parameters 记录参数
+        self.param = {
+            'fdm_id'       : fdm_id,
+            'fdm_aircraft' : fdm_aircraft,
+            'fdm_ic_v'     : fdm_ic_v,
+            'fdm_ic_lat'   : fdm_ic_lat,
+            'fdm_ic_long'  : fdm_ic_long,
+            'fdm_ic_h'     : fdm_ic_h,
+            'fdm_ic_psi'   : fdm_ic_psi,
+            'fdm_ic_theta' : fdm_ic_theta,
+            'fdm_ic_phi'   : fdm_ic_phi,
+            'fdm_hp'       : fdm_hp,
+            'fdm_fgfs'     : fdm_fgfs,
+            'flight_mode'  : flight_mode,
+        }
 
     def getProperty(
         self,

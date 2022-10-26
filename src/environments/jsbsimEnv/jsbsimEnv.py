@@ -10,14 +10,14 @@ from gym.spaces import Box, Discrete
 
 sys.path.append('./src/environments/jsbsimEnv')
 try:
-    from jsbsimFdm import JsbsimFdm as Fdm
-    print("DBRL")
-    time.sleep(1)
-except:
     from gym.envs.jsbsimEnv.jsbsimFdm import JsbsimFdm as Fdm
     print("Gym")
-    time.sleep(1)
-
+    time.sleep(5)
+except:
+    from jsbsimFdm import JsbsimFdm as Fdm
+    print("DBRL")
+    time.sleep(5)
+    
 
 class JsbsimEnv(Env):
 
@@ -34,9 +34,13 @@ class JsbsimEnv(Env):
             fdm_fgfs=True
         ),
     ) -> None:
+        super(JsbsimEnv, self).__init__()
 
         self.fdm1 = fdm1
         self.fdm2 = fdm2
+
+        self.param1 = self.fdm1.param
+        self.param2 = self.fdm2.param
 
         self.action_space = Box(
             low=np.array([
@@ -107,10 +111,6 @@ class JsbsimEnv(Env):
         ])
 
         if 500 <= self.getDistance() <= 3000:
-            # angle1 = np.arcsin(
-            #     np.linalg.norm(np.cross(self.getDistanceVector(ego=1), heading_1)) /
-            #     (self.getDistance() * np.linalg.norm(heading_1))
-            # )
 
             angle1 = np.arccos(
                 np.dot(self.getDistanceVector(ego=1), heading_1) / 
@@ -120,11 +120,6 @@ class JsbsimEnv(Env):
             if -1 <= angle1 / np.pi * 180 <= 1:
                 if ego == 2:
                     return (3000 - self.getDistance()) / 2500 / 120
-
-            # angle2 = np.arcsin(
-            #     np.linalg.norm(np.cross(self.getDistanceVector(ego=2), heading_2)) /
-            #     (self.getDistance() * np.linalg.norm(heading_2))
-            # )
 
             angle2 = np.arccos(
                 np.dot(self.getDistanceVector(ego=2), heading_2) / 
@@ -144,6 +139,9 @@ class JsbsimEnv(Env):
     def terminate(self):
 
         if self.fdm1.getProperty('position')[2] <= 1000:
+            return 2
+            
+        if self.fdm2.getProperty('position')[2] <= 1000:
             return 1
 
         if self.fdm1.fdm_hp <= 0 and self.fdm2.fdm_hp > 0:
@@ -188,30 +186,37 @@ class JsbsimEnv(Env):
 
     def reset(
         self,
-        fdm1=Fdm(
-            fdm_id=1,
-            fdm_fgfs=True
-        ),
-        fdm2=Fdm(
-            fdm_id=2,
-            fdm_ic_lat=.003,
-            fdm_ic_psi=180,
-            fdm_fgfs=True
-        ),
     ):
-        del self.fdm1, self.fdm2
         
         self.fdm1 = Fdm(
-            fdm_id=1,
-            fdm_fgfs=True
+            fdm_id=self.param1['fdm_id'],
+            fdm_aircraft=self.param1['fdm_aircraft'],
+            fdm_ic_v=self.param1['fdm_ic_v'],
+            fdm_ic_lat=self.param1['fdm_ic_lat'],
+            fdm_ic_long=self.param1['fdm_ic_long'],
+            fdm_ic_h=self.param1['fdm_ic_h'],
+            fdm_ic_psi=self.param1['fdm_ic_psi'],
+            fdm_ic_theta=self.param1['fdm_ic_theta'],
+            fdm_ic_phi=self.param1['fdm_ic_phi'],
+            fdm_hp=self.param1['fdm_hp'],
+            fdm_fgfs=self.param1['fdm_fgfs'],
+            flight_mode=self.param1['flight_mode'],
         )
+
         self.fdm2 = Fdm(
-            fdm_id=2,
-            fdm_ic_lat=.003,
-            fdm_ic_psi=180,
-            fdm_fgfs=True
+            fdm_id=self.param2['fdm_id'],
+            fdm_aircraft=self.param2['fdm_aircraft'],
+            fdm_ic_v=self.param2['fdm_ic_v'],
+            fdm_ic_lat=self.param2['fdm_ic_lat'],
+            fdm_ic_long=self.param2['fdm_ic_long'],
+            fdm_ic_h=self.param2['fdm_ic_h'],
+            fdm_ic_psi=self.param2['fdm_ic_psi'],
+            fdm_ic_theta=self.param2['fdm_ic_theta'],
+            fdm_ic_phi=self.param2['fdm_ic_phi'],
+            fdm_hp=self.param2['fdm_hp'],
+            fdm_fgfs=self.param2['fdm_fgfs'],
+            flight_mode=self.param2['flight_mode'],
         )
         
-        print("Reset!")
         return self.fdm1.getProperty('pose') + self.fdm2.getProperty('pose')
 
