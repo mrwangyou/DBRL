@@ -12,11 +12,11 @@ sys.path.append('./src/environments/jsbsimEnv')
 try:
     from gym.envs.jsbsimEnv.jsbsimFdm import JsbsimFdm as Fdm
     print("Gym")
-    time.sleep(5)
+    time.sleep(2)
 except:
     from jsbsimFdm import JsbsimFdm as Fdm
     print("DBRL")
-    time.sleep(5)
+    time.sleep(2)
     
 
 class JsbsimEnv(Env):
@@ -33,6 +33,7 @@ class JsbsimEnv(Env):
             fdm_ic_psi=180,
             fdm_fgfs=True
         ),
+        policy2='Level',
     ) -> None:
         super(JsbsimEnv, self).__init__()
 
@@ -41,6 +42,8 @@ class JsbsimEnv(Env):
 
         self.param1 = self.fdm1.param
         self.param2 = self.fdm2.param
+
+        self.policy2 = policy2
 
         self.action_space = Box(
             low=np.array([
@@ -140,7 +143,7 @@ class JsbsimEnv(Env):
 
         if self.fdm1.getProperty('position')[2] <= 1000:
             return 2
-            
+
         if self.fdm2.getProperty('position')[2] <= 1000:
             return 1
 
@@ -156,6 +159,16 @@ class JsbsimEnv(Env):
     def step(self, action):
         
         self.fdm1.sendAction(action)
+
+        if self.policy2 == 'Level':
+            self.fdm2.sendAction(  # level flight
+                action=-np.tanh((0 - self.fdm2.getProperty('attitudeDeg')[1]) * 1.5),
+                actionType='fcs/elevator-cmd-norm'
+            )
+        elif self.policy2 == 'Random':
+            self.fdm2.sendAction(
+                self.action_space.sample()
+            )
 
         self.damage()
         

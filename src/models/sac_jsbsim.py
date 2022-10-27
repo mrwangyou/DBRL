@@ -13,9 +13,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description='TBD')
     # parser.add_argument('--modelPath', default='/data/wnn_data/bestModel/', metavar='str', help='specifies the pre-trained model')
     parser.add_argument('--playSpeed', default=0, metavar='double', help='specifies to run in real world time')
+    parser.add_argument('--trainPolicy', default='Level', metavar='string', help='specifies the opposite plane\'s strategy of dogfighting')
     parser.add_argument('--train', action='store_true', help='specifies the running mode of DBRL')
-    parser.add_argument('--timesteps', default=10000000, metavar='double', help='specifies the training timesteps. Only works when --train is specified')
     parser.add_argument('--test', action='store_true', help='specifies the running mode of DBRL')
+    parser.add_argument('--timesteps', default=10000000, metavar='double', help='specifies the training timesteps. Only works when --train is specified')
     args = parser.parse_args()
     return args
 
@@ -23,6 +24,7 @@ args = parse_args()
 
 env = gym.make(
     "DBRLJsbsim-v0",
+    policy2=args.trainPolicy
 )
 
 n_actions = env.action_space.shape[-1]

@@ -16,8 +16,8 @@ def parse_args():
     # parser.add_argument('--modelPath', default='/data/wnn_data/bestModel/', metavar='str', help='specifies the pre-trained model')
     parser.add_argument('--playSpeed', default=0, metavar='double', help='specifies to run in real world time')
     parser.add_argument('--train', action='store_true', help='specifies the running mode of DBRL')
-    parser.add_argument('--timesteps', default=10000000, metavar='double', help='specifies the training timesteps. Only works when --train is specified')
     parser.add_argument('--test', action='store_true', help='specifies the running mode of DBRL')
+    parser.add_argument('--timesteps', default=10000000, metavar='double', help='specifies the training timesteps. Only works when --train is specified')
     args = parser.parse_args()
     return args
 
