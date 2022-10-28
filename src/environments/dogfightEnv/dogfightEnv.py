@@ -33,12 +33,13 @@ class DogfightEnv(Env):
         self,
         host='10.184.0.0',
         port='50888',
-        render=False
+        rendering=False
     ) -> None:
-
+        
         self.host = host
         self.port = port
         self.nof = 0
+        self.rendering = rendering
 
         try:
             df.get_planes_list()
@@ -152,7 +153,7 @@ class DogfightEnv(Env):
             ])
         )
 
-        if render == True:
+        if self.rendering:
             df.set_renderless_mode(False)
 
     def getProperty(
@@ -302,6 +303,7 @@ class DogfightEnv(Env):
         self.__init__(
             self.host,
             self.port,
+            self.rendering
         )
         
         ob = [  # normalized
