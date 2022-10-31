@@ -13,11 +13,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description='TBD')
     parser.add_argument('--host', default='10.184.0.0', metavar='str', help='specifies Harfang host id')
     parser.add_argument('--port', default='50888', metavar='str', help='specifies Harfang port id')
-    # parser.add_argument('--modelPath', default='/data/wnn_data/bestModel/', metavar='str', help='specifies the pre-trained model')
+    # 
     parser.add_argument('--playSpeed', default=0, metavar='double', help='specifies to run in real world time')
     parser.add_argument('--train', action='store_true', help='specifies the running mode of DBRL')
     parser.add_argument('--test', action='store_true', help='specifies the running mode of DBRL')
     parser.add_argument('--timesteps', default=10000000, metavar='double', help='specifies the training timesteps. Only works when --train is specified')
+    # parser.add_argument('--modelPath', default=None, metavar='str', help='specifies the pre-trained model. Only works when --train is specified')
+    parser.add_argument('--record', action='store_true', help='specifies whether to record the evaluating result of DBRL. Only works when --test is specified')
     args = parser.parse_args()
     return args
 
@@ -45,23 +47,29 @@ if not os.path.exists(path):
     os.mkdir(path)
 
 if args.train:
-    # try:
-    #     model.set_parameters("./log/sac_df2")
-    # except:
-    #     pass
+    try:
+        model = SAC.load("./log/sac_df2", env)
+        model.load_replay_buffer("./log/sac_df2_rb")
+    except:
+        pass
     model.learn(total_timesteps=10000000, log_interval=1)
     model.save("./log/sac_df2")
+    model.save_replay_buffer("./log/sac_df2_rb")
 
 if args.test:
     model = SAC.load("./log/sac_df2")
 
-    f = open('./log/sac_df_record.txt', 'r')
-    for line in f:
-        pass
-    win = int(line.split()[0])
-    episode = int(line.split()[2])
+    win = 0
+    episode = 0
 
-    f.close()
+    if args.record:
+        f = open('./log/sac_df_record.txt', 'r')
+        for line in f:
+            pass
+        win = int(line.split()[0])
+        episode = int(line.split()[2])
+
+        f.close()
 
     obs = env.reset()
     while True:
@@ -69,12 +77,13 @@ if args.test:
         obs, rewards, dones, info = env.step(action)
         env.render()
         if dones == True:
-            f = open('./log/sac_df_record.txt', 'a')
             if rewards == 50:
                 win += 1
             episode += 1
-            f.write("{} / {}\n".format(win, episode))
-            f.close()
+            if args.record:
+                f = open('./log/sac_df_record.txt', 'a')
+                f.write("{} / {}\n".format(win, episode))
+                f.close()
             print("Done! episode: {}\tacc: {}".format(episode, win / episode))
             time.sleep(2)
             env.reset()
