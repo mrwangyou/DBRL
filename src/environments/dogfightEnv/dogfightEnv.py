@@ -274,7 +274,7 @@ class DogfightEnv(Env):
 
         terminate = True if self.terminate() else False
         
-        ob = [  # normalized
+        ob = np.array([  # normalized
             df.get_plane_state(self.planeID)['position'][0] / 100,
             df.get_plane_state(self.planeID)['position'][2] / 100,
             df.get_plane_state(self.planeID)['position'][1] / 50,
@@ -288,7 +288,7 @@ class DogfightEnv(Env):
             df.get_missile_state(self.missileID)['Euler_angles'][0] * 100,
             df.get_missile_state(self.missileID)['Euler_angles'][1] * 100,
             df.get_missile_state(self.missileID)['Euler_angles'][2] * 100,
-        ]
+        ])
 
         return ob, reward, terminate, {}
 
@@ -306,7 +306,7 @@ class DogfightEnv(Env):
             self.rendering
         )
         
-        ob = [  # normalized
+        ob = np.array([  # normalized
             df.get_plane_state(self.planeID)['position'][0] / 100,
             df.get_plane_state(self.planeID)['position'][2] / 100,
             df.get_plane_state(self.planeID)['position'][1] / 50,
@@ -320,7 +320,7 @@ class DogfightEnv(Env):
             df.get_missile_state(self.missileID)['Euler_angles'][0] * 100,
             df.get_missile_state(self.missileID)['Euler_angles'][1] * 100,
             df.get_missile_state(self.missileID)['Euler_angles'][2] * 100,
-        ]
+        ])
 
         return ob
 
