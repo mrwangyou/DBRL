@@ -150,7 +150,8 @@ class DogfightEnv(Env):
                 315,
                 315,
                 315,
-            ])
+            ]),
+            dtype=np.float64
         )
 
         if self.rendering:
