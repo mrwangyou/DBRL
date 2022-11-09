@@ -62,17 +62,17 @@ class JsbsimEnv(Env):
 
         self.observation_space = Box(
             low=np.array([
-                -360,  # Latitude 纬度
-                -360,  # Longitude 经度
-                0,     # Height above sea level 海拔
+                -500,  # Latitude 纬度
+                -500,  # Longitude 经度
+                -500,     # Height above sea level 海拔
                 -360,  # Yaw 偏航角
                 -360,  # Pitch 俯仰角
                 -360,  # Roll 翻滚角
             ] * 2),
             high=np.array([
-                360,
-                360,
-                300,
+                500,
+                500,
+                500,
                 360,
                 360,
                 360,
@@ -142,7 +142,6 @@ class JsbsimEnv(Env):
     def reward(self):
 
         # sparse reward
-
         if self.terminate() == 2:
             r = -10
         elif self.terminate() == 1:
@@ -153,6 +152,10 @@ class JsbsimEnv(Env):
             r = -0.001 + (self.getDamage(2) - self.getDamage(1)) * 100
 
         return r
+
+
+
+
 
     def terminate(self):
 
@@ -196,19 +199,22 @@ class JsbsimEnv(Env):
         terminate = True if self.terminate() else False
         
         ob = np.array([  # ~100
-            (self.fdm1.getProperty('position')[0] - self.fdm1.param['fdm_ic_lat']) * 1e3,
-            (self.fdm1.getProperty('position')[1] - self.fdm1.param['fdm_ic_long']) * 1e3,
+            (self.fdm1.getProperty('position')[0] - self.fdm1.param['fdm_ic_lat']) * 1e4,
+            (self.fdm1.getProperty('position')[1] - self.fdm1.param['fdm_ic_long']) * 1e4,
             (self.fdm1.getProperty('position')[2] - self.fdm1.param['fdm_ic_h']) / 10,
             (self.fdm1.getProperty('attitudeDeg')[0] - self.fdm1.param['fdm_ic_psi']),
             (self.fdm1.getProperty('attitudeDeg')[1] - self.fdm1.param['fdm_ic_theta']),
             (self.fdm1.getProperty('attitudeDeg')[2] - self.fdm1.param['fdm_ic_phi']),
-            (self.fdm2.getProperty('position')[0] - self.fdm2.param['fdm_ic_lat']) * 1e3,
-            (self.fdm2.getProperty('position')[1] - self.fdm2.param['fdm_ic_long']) * 1e3,
+            (self.fdm2.getProperty('position')[0] - self.fdm2.param['fdm_ic_lat']) * 1e4,
+            (self.fdm2.getProperty('position')[1] - self.fdm2.param['fdm_ic_long']) * 1e4,
             (self.fdm2.getProperty('position')[2] - self.fdm2.param['fdm_ic_h']) / 10,
             (self.fdm2.getProperty('attitudeDeg')[0] - self.fdm2.param['fdm_ic_psi']),
             (self.fdm2.getProperty('attitudeDeg')[1] - self.fdm2.param['fdm_ic_theta']),
             (self.fdm2.getProperty('attitudeDeg')[2] - self.fdm2.param['fdm_ic_phi']),
         ])
+
+        print("--------------------")
+        print(ob)
 
         return ob, self.reward(), terminate, {}
 
@@ -220,9 +226,7 @@ class JsbsimEnv(Env):
         if id == 2 or id == 0:
             self.fdm2.set_output_directive('./data_output/flightgear2.xml')
 
-    def reset(
-        self,
-    ):
+    def reset(self):
         
         self.fdm1 = Fdm(
             fdm_id=self.param1['fdm_id'],
