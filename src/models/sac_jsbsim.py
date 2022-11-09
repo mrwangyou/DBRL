@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--trainPolicy', default='Level', metavar='string', help='specifies the opposite plane\'s strategy of dogfighting')
     parser.add_argument('--train', action='store_true', help='specifies the running mode of DBRL')
     parser.add_argument('--test', action='store_true', help='specifies the running mode of DBRL')
-    parser.add_argument('--timesteps', default=10000000, metavar='double', help='specifies the training timesteps. Only works when --train is specified')
+    parser.add_argument('--timesteps', default=10000000, metavar='int', help='specifies the training timesteps. Only works when --train is specified')
     args = parser.parse_args()
     return args
 
@@ -46,7 +46,7 @@ if args.train:
     #     model.set_parameters("./log/sac_jsbsim")
     # except:
     #     pass
-    model.learn(total_timesteps=10000000, log_interval=1)
+    model.learn(total_timesteps=int(args.timesteps), log_interval=1)
     model.save("./log/sac_jsbsim")
 
 if args.test:

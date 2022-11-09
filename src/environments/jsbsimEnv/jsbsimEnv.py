@@ -29,8 +29,8 @@ class JsbsimEnv(Env):
         ),
         fdm2=Fdm(
             fdm_id=2,
-            fdm_ic_lat=.01,
-            fdm_ic_psi=180,
+            fdm_ic_lat=.003,
+            fdm_ic_psi=0,
             fdm_fgfs=True
         ),
         policy2='Level',
@@ -72,7 +72,7 @@ class JsbsimEnv(Env):
             high=np.array([
                 360,
                 360,
-                60000,
+                300,
                 360,
                 360,
                 360,
@@ -139,13 +139,31 @@ class JsbsimEnv(Env):
         self.fdm1.damage(self.getDamage(1))
         self.fdm2.damage(self.getDamage(2))
 
+    def reward(self):
+
+        # sparse reward
+
+        if self.terminate() == 2:
+            r = -10
+        elif self.terminate() == 1:
+            r = 10
+        elif self.terminate() == -1:
+            r = -0.001
+        else:
+            r = -0.001 + (self.getDamage(2) - self.getDamage(1)) * 100
+
+        return r
+
     def terminate(self):
 
-        if self.fdm1.getProperty('position')[2] <= 1000:
+        if self.fdm1.getProperty('position')[2] <= 15000:  # Height protection
             return 2
 
-        if self.fdm2.getProperty('position')[2] <= 1000:
+        if self.fdm2.getProperty('position')[2] <= 15000:
             return 1
+    
+        if self.fdm1.nof >= 2000:  # Tied
+            return -1
 
         if self.fdm1.fdm_hp <= 0 and self.fdm2.fdm_hp > 0:
             return 2
@@ -175,19 +193,24 @@ class JsbsimEnv(Env):
         self.fdm1.step()
         self.fdm2.step()
 
-        if self.terminate() == 2:
-            reward = -10
-        elif self.terminate() == 1:
-            reward = 10
-        elif self.terminate() == -1:
-            reward = 0
-        else:
-            reward = self.getDamage(2) - self.getDamage(1)
-
-
         terminate = True if self.terminate() else False
         
-        return self.fdm1.getProperty('pose') + self.fdm2.getProperty('pose'), reward, terminate, {}
+        ob = np.array([  # ~100
+            (self.fdm1.getProperty('position')[0] - self.fdm1.param['fdm_ic_lat']) * 1e3,
+            (self.fdm1.getProperty('position')[1] - self.fdm1.param['fdm_ic_long']) * 1e3,
+            (self.fdm1.getProperty('position')[2] - self.fdm1.param['fdm_ic_h']) / 10,
+            (self.fdm1.getProperty('attitudeDeg')[0] - self.fdm1.param['fdm_ic_psi']),
+            (self.fdm1.getProperty('attitudeDeg')[1] - self.fdm1.param['fdm_ic_theta']),
+            (self.fdm1.getProperty('attitudeDeg')[2] - self.fdm1.param['fdm_ic_phi']),
+            (self.fdm2.getProperty('position')[0] - self.fdm2.param['fdm_ic_lat']) * 1e3,
+            (self.fdm2.getProperty('position')[1] - self.fdm2.param['fdm_ic_long']) * 1e3,
+            (self.fdm2.getProperty('position')[2] - self.fdm2.param['fdm_ic_h']) / 10,
+            (self.fdm2.getProperty('attitudeDeg')[0] - self.fdm2.param['fdm_ic_psi']),
+            (self.fdm2.getProperty('attitudeDeg')[1] - self.fdm2.param['fdm_ic_theta']),
+            (self.fdm2.getProperty('attitudeDeg')[2] - self.fdm2.param['fdm_ic_phi']),
+        ])
+
+        return ob, self.reward(), terminate, {}
 
     def render(self, id=0):
 
@@ -230,6 +253,21 @@ class JsbsimEnv(Env):
             fdm_fgfs=self.param2['fdm_fgfs'],
             flight_mode=self.param2['flight_mode'],
         )
+
+        ob = np.array([  # ~100
+            (self.fdm1.getProperty('position')[0] - self.fdm1.param['fdm_ic_lat']) * 1e3,
+            (self.fdm1.getProperty('position')[1] - self.fdm1.param['fdm_ic_long']) * 1e3,
+            (self.fdm1.getProperty('position')[2] - self.fdm1.param['fdm_ic_h']) / 10,
+            (self.fdm1.getProperty('attitudeDeg')[0] - self.fdm1.param['fdm_ic_psi']),
+            (self.fdm1.getProperty('attitudeDeg')[1] - self.fdm1.param['fdm_ic_theta']),
+            (self.fdm1.getProperty('attitudeDeg')[2] - self.fdm1.param['fdm_ic_phi']),
+            (self.fdm2.getProperty('position')[0] - self.fdm2.param['fdm_ic_lat']) * 1e3,
+            (self.fdm2.getProperty('position')[1] - self.fdm2.param['fdm_ic_long']) * 1e3,
+            (self.fdm2.getProperty('position')[2] - self.fdm2.param['fdm_ic_h']) / 10,
+            (self.fdm2.getProperty('attitudeDeg')[0] - self.fdm2.param['fdm_ic_psi']),
+            (self.fdm2.getProperty('attitudeDeg')[1] - self.fdm2.param['fdm_ic_theta']),
+            (self.fdm2.getProperty('attitudeDeg')[2] - self.fdm2.param['fdm_ic_phi']),
+        ])
         
-        return self.fdm1.getProperty('pose') + self.fdm2.getProperty('pose')
+        return ob
 

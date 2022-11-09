@@ -10,8 +10,8 @@ class JsbsimFdm():
         fdm_id       = 1,
         fdm_aircraft = 'f16',    
         fdm_ic_v     = 500,      # Calibrated Velocity (knots) https://skybrary.aero/articles/calibrated-airspeed-cas
-        fdm_ic_lat   = 0,        # Latitude (degree) 纬度
-        fdm_ic_long  = 0,        # Longitude (degree) 经度
+        fdm_ic_lat   = 0,        # Latitude (degree) 纬度 recommend .01
+        fdm_ic_long  = 0,        # Longitude (degree) 经度 recommend .003
         fdm_ic_h     = 20005.5,  # Height above sea level (feet) 海拔
         fdm_ic_psi   = 0,        # Yaw 偏航角，绕Z轴，JSBSim将按照这里列出的顺序先后进行欧拉角计算
         fdm_ic_theta = 0,        # Pitch 俯仰角，绕Y轴
