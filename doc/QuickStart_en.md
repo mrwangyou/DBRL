@@ -116,11 +116,11 @@ The action space of DBRL-JSBSim is:
 
 ```python
 gym.spaces.Box(
-    low=np.array([-1, -1, -1, 0]),
-    high=np.array([1, 1, 1, 1])
+    low=np.array([-1, -1, -1, 0, 0, 0, 0]),
+    high=np.array([1, 1, 1, 1, 1, 1, 1])
 )
 ```
-which represents the control of aileron, elevator, rudder and throttle.
+which represents the control of aileron, elevator, rudder, throttle, flap, speed brake and spoiler.
 
 The observation space is:
 

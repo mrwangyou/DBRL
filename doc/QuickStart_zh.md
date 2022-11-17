@@ -122,11 +122,11 @@ DBRL-JSBSim提供了一个基于强化学习框架Gym的智能空战仿真环境
 
 ```python
 gym.spaces.Box(
-    low=np.array([-1, -1, -1, 0]),
-    high=np.array([1, 1, 1, 1])
+    low=np.array([-1, -1, -1, 0, 0, 0, 0]),
+    high=np.array([1, 1, 1, 1, 1, 1, 1])
 )
 ```
-其中四个维度分别表示对副翼（Aileron）、升降舵（Elevator）、方向舵（Rudder）、油门（Throttle）的操控。
+其中六个维度分别表示对副翼（Aileron）、升降舵（Elevator）、方向舵（Rudder）、油门（Throttle）、襟翼（Flap）、减速板（Speed brake）、扰流片（Spoiler）的操控。
 
 状态空间为：
 

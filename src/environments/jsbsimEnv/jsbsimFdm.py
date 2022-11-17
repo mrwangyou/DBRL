@@ -169,6 +169,9 @@ class JsbsimFdm():
                 "fcs/elevator-cmd-norm",  # 升降舵
                 "fcs/rudder-cmd-norm",  # 方向舵
                 "fcs/throttle-cmd-norm",  # 油门
+                "fcs/flap-cmd-norm",  # 襟翼
+                "fcs/speedbrake-cmd-norm",  # 减速板
+                "fcs/spoiler-cmd-norm",  # 扰流片
             ]
             for i in range(len(action_space)):
                 self.fdm[action_space[i]] = action[i]

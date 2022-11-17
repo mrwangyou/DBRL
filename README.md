@@ -45,8 +45,14 @@ action_space = Box(
         -1,  # Elevator
         -1,  # Rudder
         0,   # Throttle
+        0,   # Flap
+        0,   # Speed brake
+        0,   # Spoiler
     ]),
     high=np.array([
+        1,
+        1,
+        1,
         1,
         1,
         1,

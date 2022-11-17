@@ -51,8 +51,14 @@ class JsbsimEnv(Env):
                 -1,  # Elevator 升降舵
                 -1,  # Rudder 方向舵
                 0,   # Throttle 油门
+                0,   # Flap 襟翼
+                0,   # Speed brake 减速板
+                0,   # Spoiler 扰流片
             ]),
             high=np.array([
+                1,
+                1,
+                1,
                 1,
                 1,
                 1,
