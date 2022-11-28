@@ -111,9 +111,10 @@ from DBRL.src.environments import jsbsimEnv as Env
 env = Env.Env()
 ``` -->
 
+您可以在[OneDrive链接](https://1drv.ms/u/s!AjYxuXuKCgSEvjodBexf7MkaToL9?e=nREa7B)中获取已经完成训练的模型。
+
 </details>
 
-您可以在[OneDrive链接](https://1drv.ms/u/s!AjYxuXuKCgSEvjodBexf7MkaToL9?e=nREa7B)中获取已经完成训练的模型。
 
 <details open>
 <summary>环境特征</summary>
