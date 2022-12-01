@@ -258,22 +258,24 @@ class DogfightEnv(Env):
             df.set_plane_yaw(self.planeID, action)
 
     def step(self, action):
-        
+
         self.sendAction(action)
         
         df.update_scene()
         self.nof += 1
 
-        if self.terminate() == 1:
+        terminate = self.terminate()
+
+        if terminate == 1:
             reward = 50
-        elif self.terminate() == -1:
+        elif terminate == -1:
             reward = -50
         else:
             reward = .1
             if self.getHP() <= .1:
                 reward = -1
 
-        terminate = True if self.terminate() else False
+        terminate = True if terminate else False
         
         ob = np.array([  # normalized
             df.get_plane_state(self.planeID)['position'][0] / 100,
