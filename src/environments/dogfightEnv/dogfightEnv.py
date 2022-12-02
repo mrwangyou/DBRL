@@ -33,13 +33,19 @@ class DogfightEnv(Env):
         self,
         host='10.184.0.0',
         port='50888',
-        rendering=False
+        plane_slot=1,
+        enemy_slot=3,
+        missile_slot=0,
+        rendering=False,
     ) -> None:
         
         self.host = host
         self.port = port
         self.nof = 0
         self.rendering = rendering
+        self.plane_slot = plane_slot
+        self.enemy_slot = enemy_slot
+        self.missile_slot = missile_slot
 
         try:
             df.get_planes_list()
@@ -52,13 +58,14 @@ class DogfightEnv(Env):
 
         df.disable_log()
         
-        self.planeID = planes[1]
+        self.planeID = planes[self.plane_slot]
+        self.enemyID = planes[self.enemy_slot]
 
         for i in planes:
             df.reset_machine(i)
         
-        df.set_plane_thrust(planes[3], 1)
-        df.set_plane_thrust(planes[1], 1)
+        df.set_plane_thrust(self.enemyID, 1)
+        df.set_plane_thrust(self.planeID, 1)
 
         df.set_client_update_mode(True)
 
@@ -66,44 +73,42 @@ class DogfightEnv(Env):
 
         t = 0
         while t < 1:
-            plane_state = df.get_plane_state(planes[3])
+            plane_state = df.get_plane_state(self.enemyID)
             df.update_scene()
             t = plane_state["thrust_level"]
         
-        df.activate_post_combustion(planes[3])
-        df.activate_post_combustion(planes[1])
+        df.activate_post_combustion(self.enemyID)
+        df.activate_post_combustion(self.planeID)
 
-        df.set_plane_pitch(planes[3], -0.5)
-        df.set_plane_pitch(planes[1], -0.5)
+        df.set_plane_pitch(self.enemyID, -0.5)
+        df.set_plane_pitch(self.planeID, -0.5)
 
         p = 0
         while p < 15:
-            plane_state = df.get_plane_state(planes[3])
+            plane_state = df.get_plane_state(self.enemyID)
             df.update_scene()
             p = plane_state["pitch_attitude"]
 
-        df.stabilize_plane(planes[3])
-        df.stabilize_plane(planes[1])
+        df.stabilize_plane(self.enemyID)
+        df.stabilize_plane(self.planeID)
 
-        df.retract_gear(planes[3])
-        df.retract_gear(planes[1])
+        df.retract_gear(self.enemyID)
+        df.retract_gear(self.planeID)
 
         s = 0
         while s < 1000:
-            plane_state = df.get_plane_state(planes[3])
+            plane_state = df.get_plane_state(self.enemyID)
             df.update_scene()
             s = plane_state["altitude"]
         
         df.set_plane_yaw(self.planeID, 1)
 
-        missiles = df.get_machine_missiles_list(planes[3])
+        missiles = df.get_machine_missiles_list(self.enemyID)
+        self.missileID = missiles[self.missile_slot]
 
-        missile_slot = 1
-        self.missileID = missiles[missile_slot]
+        df.fire_missile(self.enemyID, self.missile_slot)
 
-        df.fire_missile(planes[3], missile_slot)
-
-        df.set_missile_target(self.missileID, 'ally_2')
+        df.set_missile_target(self.missileID, self.planeID)
         df.set_missile_life_delay(self.missileID, 30)
 
 
@@ -230,13 +235,27 @@ class DogfightEnv(Env):
         return df.get_health(self.planeID)['health_level']
 
     def terminate(self):
-        if not df.get_missile_state('Meteorennemy_2.1')['active']:
+        if not df.get_missile_state(self.missileID)['active']:
             if self.getHP() >= .9:
                 return 1
             else:
                 return -1
         else:
             return 0
+
+    def setProperty(
+        self,
+        prop,
+        value,
+    ):
+        if prop == 'plane':
+            self.plane_slot = value
+        elif prop == 'enemy':
+            self.enemy_slot = value
+        elif prop == 'missile':
+            self.missile_slot = value
+        else:
+            raise Exception("Property {} doesn't exist!".format(prop))
 
     def sendAction(
         self,
@@ -302,11 +321,14 @@ class DogfightEnv(Env):
 
     def reset(
         self,
-    ):
+    ): 
         self.__init__(
-            self.host,
-            self.port,
-            self.rendering
+            host=self.host,
+            port=self.port,
+            plane_slot=self.plane_slot,
+            enemy_slot=self.enemy_slot,
+            missile_slot=self.missile_slot,
+            rendering=self.rendering,
         )
         
         ob = np.array([  # normalized
