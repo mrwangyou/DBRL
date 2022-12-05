@@ -210,7 +210,11 @@ class DogfightEnv(Env):
     def __init__(
         self,
         host='10.184.0.0',
-        port='50888'
+        port='50888',
+        plane_slot=1,
+        enemy_slot=3,
+        missile_slot=0,
+        rendering=False,
     ) -> None:
 ```
 
