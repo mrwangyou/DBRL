@@ -70,8 +70,8 @@ class JsbsimEnv(Env):
             low=np.array([
                 -500,  # Latitude 纬度
                 -500,  # Longitude 经度
-                -500,     # Height above sea level 海拔
-                0,  # Yaw 偏航角
+                -500,  # Height above sea level 海拔
+                0,     # Yaw 偏航角
                 -180,  # Pitch 俯仰角
                 -180,  # Roll 翻滚角
             ] * 2),
@@ -160,16 +160,12 @@ class JsbsimEnv(Env):
 
         return r
 
-
-
-
-
     def terminate(self):
 
-        if self.fdm1.getProperty('position')[2] <= 15000:  # Height protection
+        if self.fdm1.getProperty('position')[2] <= 10000:  # Height protection
             return 2
 
-        if self.fdm2.getProperty('position')[2] <= 15000:
+        if self.fdm2.getProperty('position')[2] <= 10000:
             return 1
     
         if self.fdm1.nof >= 2000:  # Tied
@@ -219,9 +215,6 @@ class JsbsimEnv(Env):
             (self.fdm2.getProperty('attitudeDeg')[1] - self.fdm2.param['fdm_ic_theta']),
             (self.fdm2.getProperty('attitudeDeg')[2] - self.fdm2.param['fdm_ic_phi']),
         ])
-
-        # print("--------------------")
-        # print(ob)
 
         return ob, self.reward(), terminate, {}
 
