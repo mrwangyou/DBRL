@@ -277,6 +277,8 @@ class DogfightEnv(Env):
             df.set_plane_yaw(self.planeID, action)
 
     def step(self, action):
+        
+        t_begin = time.time()
 
         self.sendAction(action)
         
@@ -311,6 +313,9 @@ class DogfightEnv(Env):
             df.get_missile_state(self.missileID)['Euler_angles'][1] * 100,
             df.get_missile_state(self.missileID)['Euler_angles'][2] * 100,
         ])
+
+        if self.rendering:
+            time.sleep(df.get_timestep()['timestep'] - time.time() + t_begin)
 
         return ob, reward, terminate, {}
 
