@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument('--port', default='50888', metavar='str', help='specifies Harfang port id')
     parser.add_argument('--planeSlot', default=1, metavar='int', help='specifies the ego plane')
     parser.add_argument('--enemySlot', default=3, metavar='int', help='specifies the enemy plane')
-    parser.add_argument('--missileSlot', default=0, metavar='int', help='specifies the missile')
+    parser.add_argument('--missileSlot', default=1, metavar='int', help='specifies the missile')
     parser.add_argument('--playSpeed', default=0, metavar='double', help='specifies to run in real world time')
     parser.add_argument('--train', action='store_true', help='specifies the running mode of DBRL')
     parser.add_argument('--test', action='store_true', help='specifies the running mode of DBRL')
