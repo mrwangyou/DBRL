@@ -87,7 +87,6 @@ frame_time_step = 1/60
 # Custom missile movements
 t = 0
 while not missile_state["wreck"]:
-    tt = t
     time.sleep(1/60)
     missile_state = df.get_missile_state(missile_id)
     missile_matrix[9] = x
@@ -97,8 +96,8 @@ while not missile_state["wreck"]:
     df.update_machine_kinetics(missile_id, missile_matrix, missile_speed_vector)
     df.update_scene()
     x = x
-    y = y_b + y_0 * tt - 0.5 * 10 * tt * tt
-    z = z_b + v_0 * tt
+    y = y_b + y_0 * t - 0.5 * 10 * t * t
+    z = z_b + v_0 * t
     
 
     # Compute speed vector, used by missile engine smoke
