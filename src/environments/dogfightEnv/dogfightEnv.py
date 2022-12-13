@@ -35,7 +35,7 @@ class DogfightEnv(Env):
         port='50888',
         plane_slot=1,
         enemy_slot=3,
-        missile_slot=0,
+        missile_slot=1,
         rendering=False,
     ) -> None:
         
@@ -277,7 +277,7 @@ class DogfightEnv(Env):
             df.set_plane_yaw(self.planeID, action)
 
     def step(self, action):
-        
+
         t_begin = time.time()
 
         self.sendAction(action)
@@ -315,7 +315,9 @@ class DogfightEnv(Env):
         ])
 
         if self.rendering:
-            time.sleep(df.get_timestep()['timestep'] - time.time() + t_begin)
+            time.sleep(
+                max(0, df.get_timestep()['timestep'] - (time.time() - t_begin))
+            )
 
         return ob, reward, terminate, {}
 
