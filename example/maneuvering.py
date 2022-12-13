@@ -19,6 +19,7 @@ df.set_client_update_mode(True)
 
 t = 0
 while t < 1:
+    time.sleep(1/60)
     plane_state = df.get_plane_state(planes[1])
     df.update_scene()
     t = plane_state["thrust_level"]
@@ -29,6 +30,7 @@ df.set_plane_pitch(planes[1], -0.5)
 
 p = 0
 while p < 15:
+    time.sleep(1/60)
     plane_state = df.get_plane_state(planes[1])
     df.update_scene()
     p = plane_state["pitch_attitude"]
@@ -40,6 +42,7 @@ df.retract_gear(planes[1])
 
 s = 0
 while s < 500:
+    time.sleep(1/60)
     plane_state = df.get_plane_state(planes[1])
     df.update_scene()
     s = plane_state["altitude"]
@@ -84,8 +87,8 @@ frame_time_step = 1/60
 # Custom missile movements
 t = 0
 while not missile_state["wreck"]:
-    tt = t / 10
-    # time.sleep(1/60)
+    tt = t
+    time.sleep(1/60)
     missile_state = df.get_missile_state(missile_id)
     missile_matrix[9] = x
     missile_matrix[10] = y
@@ -110,14 +113,16 @@ df.set_machine_custom_physics_mode(missile_id, False)
 df.set_plane_roll(planes[1], .5)
 
 s = 0
-while s < 3000:
+while s < 120:
+    time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
 df.set_plane_roll(planes[1], -.5)
 
 s = 0
-while s < 3000:
+while s < 120:
+    time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
@@ -125,32 +130,37 @@ while s < 3000:
 df.stabilize_plane(planes[1])
 
 s = 0
-while s < 5000:
+while s < 120:
+    time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
 df.set_plane_yaw(planes[1], .5)
 s = 0
-while s < 3000:
+while s < 120:
+    time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
 df.set_plane_yaw(planes[1], -.5)
 s = 0
-while s < 3000:
+while s < 120:
+    time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
 df.stabilize_plane(planes[1])
 
-while s < 3000:
+while s < 120:
+    time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
 print("Flaps")
 df.set_plane_flaps(planes[1], 1)
 s = 0
-while s < 3000:
+while s < 120:
+    time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
@@ -158,7 +168,8 @@ while s < 3000:
 print("Flaps2")
 df.set_plane_flaps(planes[1], -1)
 s = 0
-while s < 3000:
+while s < 120:
+    time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
@@ -166,7 +177,8 @@ print("brake")
 df.set_plane_brake(planes[1], 1)
 df.set_plane_thrust(planes[1], 0)
 s = 0
-while s < 3000:
+while s < 120:
+    time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
