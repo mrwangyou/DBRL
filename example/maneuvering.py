@@ -17,8 +17,10 @@ df.set_plane_thrust(planes[1], 1)
 
 df.set_client_update_mode(True)
 
+
 t = 0
 while t < 1:
+    df.display_2DText([0.4, 0.7], "Thrust", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     plane_state = df.get_plane_state(planes[1])
     df.update_scene()
@@ -30,6 +32,7 @@ df.set_plane_pitch(planes[1], -0.5)
 
 p = 0
 while p < 15:
+    df.display_2DText([0.4, 0.7], "Pitch", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     plane_state = df.get_plane_state(planes[1])
     df.update_scene()
@@ -87,6 +90,7 @@ frame_time_step = 1/60
 # Custom missile movements
 t = 0
 while not missile_state["wreck"]:
+    df.display_2DText([0.4, 0.7], "Flare", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     missile_state = df.get_missile_state(missile_id)
     missile_matrix[9] = x
@@ -113,6 +117,7 @@ df.set_plane_roll(planes[1], .5)
 
 s = 0
 while s < 120:
+    df.display_2DText([0.4, 0.7], "Roll", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     df.update_scene()
     s = s + 1
@@ -121,6 +126,7 @@ df.set_plane_roll(planes[1], -.5)
 
 s = 0
 while s < 120:
+    df.display_2DText([0.4, 0.7], "Roll", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     df.update_scene()
     s = s + 1
@@ -137,6 +143,7 @@ while s < 120:
 df.set_plane_yaw(planes[1], .5)
 s = 0
 while s < 120:
+    df.display_2DText([0.4, 0.7], "Yaw", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     df.update_scene()
     s = s + 1
@@ -144,6 +151,7 @@ while s < 120:
 df.set_plane_yaw(planes[1], -.5)
 s = 0
 while s < 120:
+    df.display_2DText([0.4, 0.7], "Yaw", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     df.update_scene()
     s = s + 1
@@ -155,28 +163,29 @@ while s < 120:
     df.update_scene()
     s = s + 1
 
-print("Flaps")
 df.set_plane_flaps(planes[1], 1)
 s = 0
 while s < 120:
+    df.display_2DText([0.4, 0.7], "Flaps", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
 
-print("Flaps2")
 df.set_plane_flaps(planes[1], -1)
 s = 0
 while s < 120:
+    df.display_2DText([0.4, 0.7], "Flaps", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     df.update_scene()
     s = s + 1
 
-print("brake")
+
 df.set_plane_brake(planes[1], 1)
 df.set_plane_thrust(planes[1], 0)
 s = 0
 while s < 120:
+    df.display_2DText([0.4, 0.7], "Speed brake", 0.1, [1, 0.5, 0, 1])
     time.sleep(1/60)
     df.update_scene()
     s = s + 1
