@@ -33,6 +33,7 @@ class DogfightEnv(Env):
         self,
         host='10.184.0.0',
         port='50888',
+        task='Evade',
         plane_slot=1,
         enemy_slot=3,
         missile_slot=1,
@@ -47,14 +48,24 @@ class DogfightEnv(Env):
         self.enemy_slot = enemy_slot
         self.missile_slot = missile_slot
 
+        task_set = [
+            'Evade',
+            'Dogfight',
+        ]
         try:
-            df.get_planes_list()
-        except:
+            assert task in task_set
+        except AssertionError:
+            raise Exception("Task {} doesn\'t exist!".format(task))
+        self.task = task
+
+
+        try:
+            planes = df.get_planes_list()
+        except AttributeError:
             print('Run for the first time')
             df.connect(host, int(port))
             time.sleep(2)
-        
-        planes = df.get_planes_list()
+            planes = df.get_planes_list()
 
         df.disable_log()
         
@@ -64,100 +75,191 @@ class DogfightEnv(Env):
         for i in planes:
             df.reset_machine(i)
         
-        df.set_plane_thrust(self.enemyID, 1)
-        df.set_plane_thrust(self.planeID, 1)
 
-        df.set_client_update_mode(True)
+        if self.task == 'Evade':
 
-        df.set_renderless_mode(True)
+            df.set_plane_thrust(self.enemyID, 1)
+            df.set_plane_thrust(self.planeID, 1)
 
-        t = 0
-        while t < 1:
-            plane_state = df.get_plane_state(self.enemyID)
-            df.update_scene()
-            t = plane_state["thrust_level"]
-        
-        df.activate_post_combustion(self.enemyID)
-        df.activate_post_combustion(self.planeID)
+            df.set_client_update_mode(True)
 
-        df.set_plane_pitch(self.enemyID, -0.5)
-        df.set_plane_pitch(self.planeID, -0.5)
+            df.set_renderless_mode(True)
 
-        p = 0
-        while p < 15:
-            plane_state = df.get_plane_state(self.enemyID)
-            df.update_scene()
-            p = plane_state["pitch_attitude"]
+            t = 0
+            while t < 1:
+                plane_state = df.get_plane_state(self.enemyID)
+                df.update_scene()
+                t = plane_state["thrust_level"]
+            
+            df.activate_post_combustion(self.enemyID)
+            df.activate_post_combustion(self.planeID)
 
-        df.stabilize_plane(self.enemyID)
-        df.stabilize_plane(self.planeID)
+            df.set_plane_pitch(self.enemyID, -0.5)
+            df.set_plane_pitch(self.planeID, -0.5)
 
-        df.retract_gear(self.enemyID)
-        df.retract_gear(self.planeID)
+            p = 0
+            while p < 15:
+                plane_state = df.get_plane_state(self.enemyID)
+                df.update_scene()
+                p = plane_state["pitch_attitude"]
 
-        s = 0
-        while s < 1000:
-            plane_state = df.get_plane_state(self.enemyID)
-            df.update_scene()
-            s = plane_state["altitude"]
-        
-        df.set_plane_yaw(self.planeID, 1)
+            df.stabilize_plane(self.enemyID)
+            df.stabilize_plane(self.planeID)
 
-        missiles = df.get_machine_missiles_list(self.enemyID)
-        self.missileID = missiles[self.missile_slot]
+            df.retract_gear(self.enemyID)
+            df.retract_gear(self.planeID)
 
-        df.fire_missile(self.enemyID, self.missile_slot)
+            s = 0
+            while s < 1000:
+                plane_state = df.get_plane_state(self.enemyID)
+                df.update_scene()
+                s = plane_state["altitude"]
+            
+            df.set_plane_yaw(self.planeID, 1)
 
-        df.set_missile_target(self.missileID, self.planeID)
-        df.set_missile_life_delay(self.missileID, 30)
+            missiles = df.get_machine_missiles_list(self.enemyID)
+            self.missileID = missiles[self.missile_slot]
+
+            df.fire_missile(self.enemyID, self.missile_slot)
+
+            df.set_missile_target(self.missileID, self.planeID)
+            df.set_missile_life_delay(self.missileID, 30)
 
 
-        self.action_space = Box(
-            low=np.array([
-                0,  # Flaps 襟翼
-                -1,  # Pitch 俯仰角
-                -1,  # Roll 翻滚角
-                -1,  # Yaw 偏航角
-            ]),
-            high=np.array([
-                1,
-                1,
-                1,
-                1,
-            ]),
-        )
+            self.action_space = Box(
+                low=np.array([
+                    0,  # Flaps 襟翼
+                    -1,  # Pitch 俯仰角
+                    -1,  # Roll 翻滚角
+                    -1,  # Yaw 偏航角
+                ]),
+                high=np.array([
+                    1,
+                    1,
+                    1,
+                    1,
+                ]),
+            )
 
-        self.observation_space = Box(
-            low=np.array([  # simple normalized
-                -300,  # x / 100
-                -300,  # y / 100
-                -1,    # z / 50
-                0,     # heading
-                -360,  # pitch_attitude * 4
-                -360,  # roll_attitude * 4
-                -300,  # x / 100
-                -300,  # y / 100
-                -1,    # z / 50
-                -315,  # heading * 100
-                -315,  # pitch_attitude * 100
-                -315,  # roll_attitude * 100
-            ]),
-            high=np.array([
-                300,
-                300,
-                200,
-                360,
-                360,
-                360,
-                300,
-                300,
-                200,
-                315,
-                315,
-                315,
-            ]),
-            dtype=np.float64
-        )
+            self.observation_space = Box(
+                low=np.array([  # simple normalized
+                    # ego
+                    -300,  # x / 100
+                    -300,  # y / 100
+                    -1,    # z / 50
+                    0,     # heading
+                    -360,  # pitch_attitude * 4
+                    -360,  # roll_attitude * 4
+                    # oppo
+                    -300,  # x / 100
+                    -300,  # y / 100
+                    -1,    # z / 50
+                    -315,  # heading * 100
+                    -315,  # pitch_attitude * 100
+                    -315,  # roll_attitude * 100
+                ]),
+                high=np.array([
+                    300,
+                    300,
+                    200,
+                    360,
+                    360,
+                    360,
+                    300,
+                    300,
+                    200,
+                    315,
+                    315,
+                    315,
+                ]),
+                dtype=np.float64
+            )
+
+        elif self.task == 'Dogfight':
+            df.set_plane_thrust(self.enemyID, 1)
+            df.set_plane_thrust(self.planeID, 1)
+            df.set_client_update_mode(True)
+
+            df.set_renderless_mode(True)
+
+            t = 0
+            while t < 1:
+                plane_state = df.get_plane_state(self.enemyID)
+                df.update_scene()
+                t = plane_state["thrust_level"]
+            
+            df.activate_post_combustion(self.enemyID)
+            df.activate_post_combustion(self.planeID)
+
+            df.set_plane_pitch(self.enemyID, -0.5)
+            df.set_plane_pitch(self.planeID, -0.5)
+
+            p = 0
+            while p < 15:
+                plane_state = df.get_plane_state(self.enemyID)
+                df.update_scene()
+                p = plane_state["pitch_attitude"]
+
+            df.stabilize_plane(self.enemyID)
+            df.stabilize_plane(self.planeID)
+
+            df.retract_gear(self.enemyID)
+            df.retract_gear(self.planeID)
+
+            s = 0
+            while s < 1000:
+                plane_state = df.get_plane_state(self.enemyID)
+                df.update_scene()
+                s = plane_state["altitude"]        
+
+            self.action_space = Box(  # Same as Evade mode
+                low=np.array([
+                    0,  # Flaps 襟翼
+                    -1,  # Pitch 俯仰角
+                    -1,  # Roll 翻滚角
+                    -1,  # Yaw 偏航角
+                ]),
+                high=np.array([
+                    1,
+                    1,
+                    1,
+                    1,
+                ]),
+            )
+
+            self.observation_space = Box(
+                low=np.array([  # simple normalized
+                    # ego
+                    -300,  # x / 100
+                    -300,  # y / 100
+                    -1,    # z / 50
+                    0,     # heading
+                    -360,  # pitch_attitude * 4
+                    -360,  # roll_attitude * 4
+                    # oppo
+                    -300,  # x / 100
+                    -300,  # y / 100
+                    -1,    # z / 50
+                    0,     # heading
+                    -360,  # pitch_attitude * 4
+                    -360,  # roll_attitude * 4
+                ]),
+                high=np.array([
+                    300,
+                    300,
+                    200,
+                    360,
+                    360,
+                    360,
+                    300,
+                    300,
+                    200,
+                    360,
+                    360,
+                    360,
+                ]),
+                dtype=np.float64
+            )
 
         if self.rendering:
             df.set_renderless_mode(False)
