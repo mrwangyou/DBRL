@@ -97,7 +97,7 @@ class JsbsimEnv(Env):
             raise Exception("Plane {} doesn\'t exist".format(ego))
 
     def getDistance(self):
-        assert np.linalg.norm(self.getDistanceVector(1)) == np.linalg.norm(self.getDistanceVector(2))
+        assert abs(np.linalg.norm(self.getDistanceVector(1)) - np.linalg.norm(self.getDistanceVector(2))) < 1e-5
         return np.linalg.norm(self.getDistanceVector(1))
     
     def getDamage(self, ego):
