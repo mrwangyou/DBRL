@@ -30,7 +30,9 @@ del df2/, df2.7z
 ```
 Replace `{DBRL}` with the path of this project. 
 
-> If you want to build the Gym environment with `Gym.make`, you need to replace `import socket_lib` with `from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib` in `{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`. We are trying to simplify this step.
+> If you want to use 7z command in the command line, add your 7zip path to environment variables *Path* on Windows. Alternatively, you can also unzip the folder manually.
+
+> If you want to build the Gym environment with `Gym.make`, you need to replace `import socket_lib` with `from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib` in `{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`. We are trying to find ways to simplify this step.
 
 If you want to visualize the aircraft model in FlightGear while running the FDM with the JSBSim executable, please download FlightGear following the instructions on the <a href="https://www.flightgear.org/">FlightGear website</a>. If you need to visualize the two aircrafts in an engagement simultaneously, please copy two `{JSBSim}/data_output/flightgear.xml`, name them `flightgear{1/2}.xml`, and replace `5550` in line 18 of `flightgear2.xml` to `5551`. `{JSBSim}` represents the path of Python JSBSim. You could run the code below to get the default JSBSim path.
 

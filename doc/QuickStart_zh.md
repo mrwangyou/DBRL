@@ -30,10 +30,10 @@ mv ./df2/dogfight-sandbox-hg2/ {DBRL}/src/environments/dogfightEnv/dogfight_sand
 
 del df2/, df2.7z
 ```
-其中，`{DBRL}`需要替换为本项目所在的路径，配置7z压缩软件的命令行功能可见[链接](https://www.cnblogs.com/conorblog/p/14543286.html)，您同样可以手动进行文件解压缩操作。
+其中，`{DBRL}`需要替换为本项目所在的路径，在命令行中使用7z指令需要将您的7zip安装位置添加至path系统变量，您同样可以手动进行文件下载，解压缩，重命名与移动操作。
 
 
-> 如果需要使用`Gym.make`指令搭建环境，需要将生成的`{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`中的`import socket_lib`修改为`from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib`。我们正在尝试简化这步操作。
+> 如果需要使用`Gym.make`指令搭建环境，需要将生成的`{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`中的`import socket_lib`修改为`from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib`。我们正在尝试寻找简化这步操作的方法。
 
 JSBSim的可视化功能基于FlightGear实现，<u>如需在使用JSBSim的过程中将空战的飞行过程可视化显示</u>，请在<a href="https://www.flightgear.org/">FlightGear官网</a>中安装FlightGear软件。如需对缠斗中的两架飞机分别进行可视化，请在`{JSBSim}/data_output/`下复制两份`flightgear.xml`文件，分别命名为`flightgear{1/2}.xml`，并将`flightgear2.xml`第18行中的`5550`修改为`5551`。上述操作中的`{JSBSim}`为Python JSBSim库所在的路径；如需查看`JSBSim`源文件地址，可以运行如下代码：
 
