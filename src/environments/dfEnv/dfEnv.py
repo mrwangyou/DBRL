@@ -99,6 +99,7 @@ class DfEnv(Env):
             df.update_scene()
             s = plane_state["altitude"]       
 
+        df.set_target_id(self.enemyID, self.planeID)
         df.activate_IA(self.enemyID)
 
         self.action_space = Box(  # Same as Evade mode
@@ -348,7 +349,7 @@ class DfEnv(Env):
         elif terminate == 2:
             reward = -10
         else:
-            reward = -.1
+            reward = .01
 
         terminate = True if terminate else False
         
