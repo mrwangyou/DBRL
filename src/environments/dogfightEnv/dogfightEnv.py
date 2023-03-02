@@ -169,70 +169,75 @@ class DogfightEnv(Env):
         self,
         prop
     ):
+        plane_state = df.get_plane_state(self.planeID)
+        missile_state = df.get_missile_state(self.missileID)
         if prop == 'position':
             return [
-                df.get_plane_state(self.planeID)['position'][0],
-                df.get_plane_state(self.planeID)['position'][2],
-                df.get_plane_state(self.planeID)['position'][1],
+                plane_state['position'][0],
+                plane_state['position'][2],
+                plane_state['position'][1],
             ]
         elif prop == 'positionEci':
             warnings.warn('Dogfight simulation environments have no global data!')
             return [
-                df.get_plane_state(self.planeID)['position'][0],
-                df.get_plane_state(self.planeID)['position'][2],
-                df.get_plane_state(self.planeID)['position'][1],
+                plane_state['position'][0],
+                plane_state['position'][2],
+                plane_state['position'][1],
             ]
         elif prop == 'positionEcef':
             warnings.warn('Dogfight simulation environments have no global data!')
             return [
-                df.get_plane_state(self.planeID)['position'][0],
-                df.get_plane_state(self.planeID)['position'][2],
-                df.get_plane_state(self.planeID)['position'][1],
+                plane_state['position'][0],
+                plane_state['position'][2],
+                plane_state['position'][1],
             ]
         elif prop == 'attitudeRad':
             return [
-                df.get_plane_state(self.planeID)['heading'] / 180 * np.pi,
-                df.get_plane_state(self.planeID)['pitch_attitude'] / 180 * np.pi,
-                df.get_plane_state(self.planeID)['roll_attitude'] / 180 * np.pi,
+                plane_state['heading'] / 180 * np.pi,
+                plane_state['pitch_attitude'] / 180 * np.pi,
+                plane_state['roll_attitude'] / 180 * np.pi,
             ]
         elif prop == 'attitudeDeg':
             return [
-                df.get_plane_state(self.planeID)['heading'],
-                df.get_plane_state(self.planeID)['pitch_attitude'],
-                df.get_plane_state(self.planeID)['roll_attitude'],
+                plane_state['heading'],
+                plane_state['pitch_attitude'],
+                plane_state['roll_attitude'],
             ]
         elif prop == 'pose':
             return [
-                df.get_plane_state(self.planeID)['position'][0],
-                df.get_plane_state(self.planeID)['position'][2],
-                df.get_plane_state(self.planeID)['position'][1],
-                df.get_plane_state(self.planeID)['heading'],
-                df.get_plane_state(self.planeID)['pitch_attitude'],
-                df.get_plane_state(self.planeID)['roll_attitude'],
+                plane_state['position'][0],
+                plane_state['position'][2],
+                plane_state['position'][1],
+                plane_state['heading'],
+                plane_state['pitch_attitude'],
+                plane_state['roll_attitude'],
             ]
         elif prop == 'velocity':
             warnings.warn('三个值为速度在欧拉角上的分量, 与JSBSim中的速度不同')
             return [
-                df.get_plane_state(self.planeID)['horizontal_speed'],
-                df.get_plane_state(self.planeID)['linear_speed'],
-                -df.get_plane_state(self.planeID)['vertical_speed'],
+                plane_state['horizontal_speed'],
+                plane_state['linear_speed'],
+                -plane_state['vertical_speed'],
             ]
         elif prop == 'poseMissile':
             return [
-                df.get_missile_state(self.missileID)['position'][0],
-                df.get_missile_state(self.missileID)['position'][1],
-                df.get_missile_state(self.missileID)['position'][2],
-                df.get_missile_state(self.missileID)['Euler_angles'][0],
-                df.get_missile_state(self.missileID)['Euler_angles'][1],
-                df.get_missile_state(self.missileID)['Euler_angles'][2],
+                missile_state['position'][0],
+                missile_state['position'][1],
+                missile_state['position'][2],
+                missile_state['Euler_angles'][0],
+                missile_state['Euler_angles'][1],
+                missile_state['Euler_angles'][2],
             ]
         else:
             raise Exception("Property {} doesn't exist!".format(prop))
 
     def getDistance(self):
-        return ((df.get_plane_state(self.planeID)['position'][0] - df.get_missile_state(self.missileID)['position'][0]) ** 2 +\
-        (df.get_plane_state(self.planeID)['position'][1] - df.get_missile_state(self.missileID)['position'][1]) ** 2 +\
-        (df.get_plane_state(self.planeID)['position'][2] - df.get_missile_state(self.missileID)['position'][2]) ** 2) ** .5
+        plane_state = df.get_plane_state(self.planeID)
+        missile_state = df.get_missile_state(self.missileID)
+
+        return ((plane_state['position'][0] - missile_state['position'][0]) ** 2 +\
+        (plane_state['position'][1] - missile_state['position'][1]) ** 2 +\
+        (plane_state['position'][2] - missile_state['position'][2]) ** 2) ** .5
 
     def getHP(self):
         return df.get_health(self.planeID)['health_level']
@@ -301,20 +306,23 @@ class DogfightEnv(Env):
 
         terminate = True if terminate else False
         
-        ob = np.array([  # normalized
-            df.get_plane_state(self.planeID)['position'][0] / 100,
-            df.get_plane_state(self.planeID)['position'][2] / 100,
-            df.get_plane_state(self.planeID)['position'][1] / 50,
-            df.get_plane_state(self.planeID)['heading'],
-            df.get_plane_state(self.planeID)['pitch_attitude'] * 4,
-            df.get_plane_state(self.planeID)['roll_attitude'] * 4,
+        plane_state = df.get_plane_state(self.planeID)
+        missile_state = df.get_missile_state(self.missileID)
 
-            df.get_missile_state(self.missileID)['position'][0] / 100,
-            df.get_missile_state(self.missileID)['position'][2] / 100,
-            df.get_missile_state(self.missileID)['position'][1] / 50,
-            df.get_missile_state(self.missileID)['Euler_angles'][0] * 100,
-            df.get_missile_state(self.missileID)['Euler_angles'][1] * 100,
-            df.get_missile_state(self.missileID)['Euler_angles'][2] * 100,
+        ob = np.array([  # normalized
+            plane_state['position'][0] / 100,
+            plane_state['position'][2] / 100,
+            plane_state['position'][1] / 50,
+            plane_state['heading'],
+            plane_state['pitch_attitude'] * 4,
+            plane_state['roll_attitude'] * 4,
+
+            missile_state['position'][0] / 100,
+            missile_state['position'][2] / 100,
+            missile_state['position'][1] / 50,
+            missile_state['Euler_angles'][0] * 100,
+            missile_state['Euler_angles'][1] * 100,
+            missile_state['Euler_angles'][2] * 100,
         ])
 
         if self.rendering:
@@ -340,21 +348,24 @@ class DogfightEnv(Env):
             missile_slot=self.missile_slot,
             rendering=self.rendering,
         )
-        
-        ob = np.array([  # normalized
-            df.get_plane_state(self.planeID)['position'][0] / 100,
-            df.get_plane_state(self.planeID)['position'][2] / 100,
-            df.get_plane_state(self.planeID)['position'][1] / 50,
-            df.get_plane_state(self.planeID)['heading'],
-            df.get_plane_state(self.planeID)['pitch_attitude'] * 4,
-            df.get_plane_state(self.planeID)['roll_attitude'] * 4,
 
-            df.get_missile_state(self.missileID)['position'][0] / 100,
-            df.get_missile_state(self.missileID)['position'][2] / 100,
-            df.get_missile_state(self.missileID)['position'][1] / 50,
-            df.get_missile_state(self.missileID)['Euler_angles'][0] * 100,
-            df.get_missile_state(self.missileID)['Euler_angles'][1] * 100,
-            df.get_missile_state(self.missileID)['Euler_angles'][2] * 100,
+        plane_state = df.get_plane_state(self.planeID)
+        missile_state = df.get_missile_state(self.missileID)
+
+        ob = np.array([  # normalized
+            plane_state['position'][0] / 100,
+            plane_state['position'][2] / 100,
+            plane_state['position'][1] / 50,
+            plane_state['heading'],
+            plane_state['pitch_attitude'] * 4,
+            plane_state['roll_attitude'] * 4,
+
+            missile_state['position'][0] / 100,
+            missile_state['position'][2] / 100,
+            missile_state['position'][1] / 50,
+            missile_state['Euler_angles'][0] * 100,
+            missile_state['Euler_angles'][1] * 100,
+            missile_state['Euler_angles'][2] * 100,
         ])
 
         return ob
