@@ -1,3 +1,9 @@
+## Important Notice
+
+### We are working on implement the one-to-one within-visual range dogfighting algorithm based on Harfang3D Dog-Fight on this project, thus some files may not work properly. Please use version 2a6b47a until complete.
+
+---
+
 <div align="center">
   <h1>DBRL: A Gym <b>D</b>ogfighting Simulation <b>B</b>enchmark for <b>R</b>einforcement <b>L</b>earning Research</h1>
 
