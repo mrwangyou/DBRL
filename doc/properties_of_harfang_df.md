@@ -38,7 +38,7 @@ Return a `float`.
 
 ## df.getplane_state(self.planeID)['linear_speed']
 
-Return a `float`. This value equals to the geometric Mean of 'horizontal_speed' and 'vertical_speed'
+Return a `float`. This value equals to the geometric mean of 'horizontal_speed' and 'vertical_speed'.
 
 
 
