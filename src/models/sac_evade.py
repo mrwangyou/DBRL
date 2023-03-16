@@ -53,22 +53,22 @@ if not os.path.exists(path):
 
 if args.train:
     try:
-        model = SAC.load("./log/sac_df2", env)
-        model.load_replay_buffer("./log/sac_df2_rb")
+        model = SAC.load("./log/sac_evade", env)
+        model.load_replay_buffer("./log/sac_evade_rb")
     except:
         pass
     model.learn(total_timesteps=10000000, log_interval=1)
-    model.save("./log/sac_df2")
-    model.save_replay_buffer("./log/sac_df2_rb")
+    model.save("./log/sac_evade")
+    model.save_replay_buffer("./log/sac_evade_rb")
 
 if args.test:
-    model = SAC.load("./log/sac_df2")
+    model = SAC.load("./log/sac_evade")
 
     win = 0
     episode = 0
 
     if args.record:
-        f = open('./log/sac_df_record.txt', 'r')
+        f = open('./log/sac_evade_record.txt', 'r')
         for line in f:
             pass
         win = int(line.split()[0])
@@ -86,7 +86,7 @@ if args.test:
                 win += 1
             episode += 1
             if args.record:
-                f = open('./log/sac_df_record.txt', 'a')
+                f = open('./log/sac_evade_record.txt', 'a')
                 f.write("{} / {}\n".format(win, episode))
                 f.close()
             print("Done! episode: {}\tacc: {}".format(episode, win / episode))
