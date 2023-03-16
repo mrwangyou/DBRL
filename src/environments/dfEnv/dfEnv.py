@@ -242,33 +242,44 @@ class DfEnv(Env):
             raise Exception("Plane {} doesn\'t exist".format(ego))
 
     def getDistance(self):
-        assert abs(((df.get_plane_state(self.planeID)['position'][0] - df.get_plane_state(self.enemyID)['position'][0]) ** 2 +\
-        (df.get_plane_state(self.planeID)['position'][1] - df.get_plane_state(self.enemyID)['position'][1]) ** 2 +\
-        (df.get_plane_state(self.planeID)['position'][2] - df.get_plane_state(self.enemyID)['position'][2]) ** 2) ** .5 - np.linalg.norm(self.getDistanceVector(1))) < 1e-5
+        plane_state = df.get_plane_state(self.planeID)
+        enemy_state = df.get_plane_state(self.enemyID)
 
-        return np.linalg.norm(self.getDistanceVector(1))
+        tmp1 = ((plane_state['position'][0] - enemy_state['position'][0]) ** 2 +\
+        (plane_state['position'][1] - enemy_state['position'][1]) ** 2 +\
+        (plane_state['position'][2] - enemy_state['position'][2]) ** 2) ** .5
+
+        tmp2 = np.linalg.norm(self.getDistanceVector(1))
+        tmp3 = np.linalg.norm(self.getDistanceVector(2))
+        try:
+            assert abs(tmp1 - tmp2) < 1, [tmp1, tmp2, abs(tmp1 - tmp2), abs(tmp1 - tmp2) < 1]
+            assert abs(tmp3 - tmp2) < 1, [tmp3, tmp2, abs(tmp3 - tmp2), abs(tmp3 - tmp2) < 1]
+        except:
+            warnings.warn('飞机之间距离计算误差较大！')
+
+        return tmp2
     
     def getDamage(self, ego):
         attitude1 = self.getProperty("attitudeRad")
         attitude2 = self.getProperty("attitudeRadEnemy")
 
         theta_1 = np.pi / 2 - attitude1[1]
-        psi_1 = np.pi / 2 - attitude1[0]
+        psi_1 = np.pi * 2 - ((attitude1[0] - np.pi / 2) % (np.pi * 2))
         heading_1 = np.array([
-            np.cos(theta_1),
             np.sin(theta_1) * np.cos(psi_1),
             np.sin(theta_1) * np.sin(psi_1),
+            np.cos(theta_1)
         ])
 
         theta_2 = np.pi / 2 - attitude2[1]
-        psi_2 = np.pi / 2 - attitude2[0]
+        psi_2 = np.pi * 2 - (attitude2[0] - np.pi / 2) % (np.pi * 2)
         heading_2 = np.array([
-            np.cos(theta_2),
             np.sin(theta_2) * np.cos(psi_2),
             np.sin(theta_2) * np.sin(psi_2),
+            np.cos(theta_2)
         ])
 
-        if 500 <= self.getDistance() <= 3000:
+        if self.getDistance() <= 3000:
 
             angle1 = np.arccos(
                 np.dot(self.getDistanceVector(ego=1), heading_1) / 
@@ -277,6 +288,7 @@ class DfEnv(Env):
 
             if -1 <= angle1 / np.pi * 180 <= 1:
                 if ego == 2:
+                    print('Damage 1')
                     return (3000 - self.getDistance()) / 2500 / 120
 
             angle2 = np.arccos(
@@ -286,8 +298,11 @@ class DfEnv(Env):
 
             if -1 <= angle2 / np.pi * 180 <= 1:
                 if ego == 1:
+                    print('Damage 2')
                     return (3000 - self.getDistance()) / 2500 / 120
             
+            print("angle1 {}\tangle2 {}".format(angle1 / np.pi * 180, angle2 / np.pi * 180))
+
         return 0
 
     def damage(self, ego):
@@ -340,16 +355,19 @@ class DfEnv(Env):
         df.update_scene()
         self.nof += 1
 
+        self.damage(1)
+        self.damage(2)
+
         terminate = self.terminate()
 
         if terminate == 1:
             reward = 50
         elif terminate == -1:
-            reward = -50
+            reward = 0
         elif terminate == 2:
-            reward = -10
+            reward = 0
         else:
-            reward = .01
+            reward = 0
 
         terminate = True if terminate else False
         
