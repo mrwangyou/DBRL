@@ -48,6 +48,7 @@ print(jsbsim.get_default_root_dir())
 ```bash
 --fdm=null --native-fdm=socket,in,60,,5550,udp
 ```
+如果您的系统语言非英语，且出现了FlightGear在操纵键盘后卡住的情况，您可以尝试使用其他输入法来解决这个问题。详情可见[论坛](https://forum.flightgear.org/viewtopic.php?f=22&t=40704)。
 
 在运行同时对两架飞机可视化的仿真中，请分别使用
 ```bash
