@@ -279,7 +279,7 @@ class DfEnv(Env):
             np.cos(theta_2)
         ])
 
-        if self.getDistance() <= 3000:
+        if 500 <= self.getDistance() <= 3000:
 
             angle1 = np.arccos(
                 np.dot(self.getDistanceVector(ego=1), heading_1) / 
@@ -301,7 +301,7 @@ class DfEnv(Env):
                     print('Damage 2')
                     return (3000 - self.getDistance()) / 2500 / 120
             
-            print("angle1 {}\tangle2 {}".format(angle1 / np.pi * 180, angle2 / np.pi * 180))
+            # print("angle1 {}\tangle2 {}".format(angle1 / np.pi * 180, angle2 / np.pi * 180))
 
         return 0
 
@@ -355,7 +355,7 @@ class DfEnv(Env):
         df.update_scene()
         self.nof += 1
 
-        self.damage(1)
+        # self.damage(1)
         self.damage(2)
 
         terminate = self.terminate()
