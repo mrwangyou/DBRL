@@ -19,7 +19,7 @@ pip install jsbsim
 
 安装的JSBSim可能不包括[JSBSim Github页面](https://github.com/JSBSim-Team/jsbsim)中的全部文件，建议您将如上链接中的文件拷贝进`JSBSim`源文件地址中。
 
-Dogfight 2环境仅支持在Windows系统下运行，<u>如需使用基于Dogfight 2搭建的导弹躲避仿真环境</u>，可以在Windows PowerShell中运行如下代码进行软件下载与配置：
+这里只提供Dogfight 2环境在Windows系统下运行的示例，如果需要在Linux系统中运行Harfang3D Dog-Fight，可以下载Linux版Harfang。<u>如需使用基于Dogfight 2搭建的导弹躲避仿真环境</u>，可以在Windows PowerShell中运行如下代码进行软件下载与配置：
 
 ```bash
 wget -Uri https://github.com/harfang3d/dogfight-sandbox-hg2/releases/download/1.0.2/dogfight-sandbox-hg2-win64.7z -OutFile "df2.7z"
@@ -48,7 +48,7 @@ print(jsbsim.get_default_root_dir())
 ```bash
 --fdm=null --native-fdm=socket,in,60,,5550,udp
 ```
-如果您的系统语言非英语，且出现了FlightGear在操纵键盘后卡住的情况，您可以尝试使用其他输入法来解决这个问题。详情可见[论坛](https://forum.flightgear.org/viewtopic.php?f=22&t=40704)。
+> 如果您的系统语言非英语，且出现了FlightGear在操纵键盘后卡住的情况，您可以尝试使用其他输入法来解决这个问题。详情可见[论坛](https://forum.flightgear.org/viewtopic.php?f=22&t=40704)。
 
 在运行同时对两架飞机可视化的仿真中，请分别使用
 ```bash
@@ -112,7 +112,7 @@ from DBRL.src.environments import jsbsimEnv as Env
 env = Env.Env()
 ``` -->
 
-您可以在[OneDrive链接](https://1drv.ms/u/s!AjYxuXuKCgSEvjodBexf7MkaToL9?e=nREa7B)中获取已经完成训练的模型。
+> 您可以在[OneDrive链接](https://1drv.ms/u/s!AjYxuXuKCgSEvjodBexf7MkaToL9?e=nREa7B)中获取已经完成训练的模型。
 
 </details>
 

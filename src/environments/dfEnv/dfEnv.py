@@ -288,7 +288,6 @@ class DfEnv(Env):
 
             if -1 <= angle1 / np.pi * 180 <= 1:
                 if ego == 2:
-                    print('Damage 1')
                     return (3000 - self.getDistance()) / 2500 / 120
 
             angle2 = np.arccos(
@@ -298,7 +297,6 @@ class DfEnv(Env):
 
             if -1 <= angle2 / np.pi * 180 <= 1:
                 if ego == 1:
-                    print('Damage 2')
                     return (3000 - self.getDistance()) / 2500 / 120
             
             # print("angle1 {}\tangle2 {}".format(angle1 / np.pi * 180, angle2 / np.pi * 180))
