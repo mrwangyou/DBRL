@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--planeSlot', default=1, help='specifies the ego plane')
     parser.add_argument('--enemySlot', default=3, help='specifies the enemy plane')
     parser.add_argument('--missileSlot', default=1, help='specifies the missile')
-    parser.add_argument('--playSpeed', default=0, help='specifies to run in real world time')
+    parser.add_argument('--playSpeed', type=int, default=0, help='specifies to run in real world time')
     parser.add_argument('--train', action='store_true', help='specifies the running mode of DBRL')
     parser.add_argument('--test', action='store_true', help='specifies the running mode of DBRL')
     parser.add_argument('--timesteps', type=int, default=10000000, help='specifies the training timesteps. Only works when --train is specified')
@@ -79,14 +79,14 @@ if args.test:
     episode = 0
 
     if args.record:
-        try:
+        if os.path.exists('./log/{}_record.txt'.format(msg)):
             f = open('./log/{}_record.txt'.format(msg), 'r')
             for line in f:
                 pass
             win = int(line.split()[0])
             episode = int(line.split()[2])
             f.close()
-        except:
+        else:
             pass
 
     obs = env.reset()
