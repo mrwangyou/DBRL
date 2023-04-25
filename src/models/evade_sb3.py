@@ -79,13 +79,15 @@ if args.test:
     episode = 0
 
     if args.record:
-        f = open('./log/{}_record.txt'.format(msg), 'r')
-        for line in f:
+        try:
+            f = open('./log/{}_record.txt'.format(msg), 'r')
+            for line in f:
+                pass
+            win = int(line.split()[0])
+            episode = int(line.split()[2])
+            f.close()
+        except:
             pass
-        win = int(line.split()[0])
-        episode = int(line.split()[2])
-
-        f.close()
 
     obs = env.reset()
     while True:
@@ -100,6 +102,6 @@ if args.test:
                 f = open('./log/{}_record.txt'.format(msg), 'a')
                 f.write("{} / {}\n".format(win, episode))
                 f.close()
-            print("Done! episode: {}\tacc: {}".format(episode, win / episode))
+            print("Episode: {}\tacc: {}".format(episode, win / episode))
             time.sleep(2)
             env.reset()
