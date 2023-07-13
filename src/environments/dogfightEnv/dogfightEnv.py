@@ -8,6 +8,14 @@ import gym
 import numpy as np
 from gym import Env
 from gym.spaces import Box, Discrete
+from pathlib import Path
+
+if str(Path(__file__).resolve().parents[2])[-3:] == 'gym':
+    print("Using Gym Version")
+    time.sleep(1)
+elif str(Path(__file__).resolve().parents[3])[-4:] == 'DBRL':
+    print("Using DBRL Version")
+    time.sleep(1)
 
 sys.path.append('./src/')
 sys.path.append('./src/environments/dogfightEnv/')
