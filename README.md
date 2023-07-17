@@ -115,5 +115,5 @@ action_space = Box(
 
 ## <div align="center">Welcome PR</div>
 
-If you find any mistakes while using, or have any suggestions and advices, please point it out in Github Issues. We're also looking forward to your contributions, such as your air combat reinforcement learning models, to this dogfight benchmark. If you are interesting in this project, feel free to contact `mrwangyou@stu.xjtu.edu.cn`.
+If you find any mistakes while using, or have any suggestions and advices, please point it out in Github Issues. We're also looking forward to your contributions, such as your air combat reinforcement learning models, to this dogfight benchmark. <!-- If you are interesting in this project, feel free to contact `mrwangyou@stu.xjtu.edu.cn`. -->
 
