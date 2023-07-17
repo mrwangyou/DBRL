@@ -245,4 +245,4 @@ class DogfightEnv(Env):
 
 ## <div align="center">欢迎交流</div>
 
-如果您在使用过程中发现了任何错误，或者有任何需求与改进的建议，欢迎在Github Issues中提出，或者直接联系我的邮箱`mrwangyou@stu.xjtu.edu.cn`，谢谢！
+如果您在使用过程中发现了任何错误，或者有任何需求与改进的建议，欢迎在Github Issues中提出，<!-- 或者直接联系我的邮箱`mrwangyou@stu.xjtu.edu.cn`，-->谢谢！
