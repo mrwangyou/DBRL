@@ -22,7 +22,8 @@ def parse_args():
     parser.add_argument('--timesteps', type=int, default=10000000, help='specifies the training timesteps. Only works when --train is specified')
     parser.add_argument('--model', default='SAC', help='specifies the DRL model used in algorithm training. Only works when --train or --test is specified')
     # parser.add_argument('--modelPath', default=None, help='specifies the pre-trained model. Only works when --train is specified')
-    parser.add_argument('--record', action='store_true', help='specifies whether to record the evaluating result of DBRL. Only works when --test is specified')
+    parser.add_argument('--recordResult', action='store_true', help='specifies whether to record the evaluating result of DBRL. Only works when --test is specified')
+    parser.add_argument('--recordStatus', type=int, default=0, help='specifies the frequency of aircraft status recording during test flight. Only works when --test is specified')
     args = parser.parse_args()
     return args
 
@@ -35,7 +36,8 @@ env = gym.make(
     plane_slot=args.planeSlot,
     enemy_slot=args.enemySlot,
     missile_slot=args.missileSlot,
-    rendering=True if args.playSpeed else False
+    rendering=True if args.playSpeed else False,
+    record_status=args.recordStatus,
 )
 
 n_actions = env.action_space.shape[-1]
@@ -78,9 +80,9 @@ if args.test:
     win = 0
     episode = 0
 
-    if args.record:
-        if os.path.exists('./log/{}_record.txt'.format(msg)):
-            f = open('./log/{}_record.txt'.format(msg), 'r')
+    if args.recordResult:
+        if os.path.exists('./log/{}_recordResult.txt'.format(msg)):
+            f = open('./log/{}_recordResult.txt'.format(msg), 'r')
             for line in f:
                 pass
             win = int(line.split()[0])
@@ -98,8 +100,8 @@ if args.test:
             if rewards == 50:
                 win += 1
             episode += 1
-            if args.record:
-                f = open('./log/{}_record.txt'.format(msg), 'a')
+            if args.recordResult:
+                f = open('./log/{}_recordResult.txt'.format(msg), 'a')
                 f.write("{} / {}\n".format(win, episode))
                 f.close()
             print("Episode: {}\tacc: {}".format(episode, win / episode))

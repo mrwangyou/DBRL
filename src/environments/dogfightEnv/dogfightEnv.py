@@ -10,7 +10,7 @@ from gym import Env
 from gym.spaces import Box, Discrete
 from pathlib import Path
 
-if str(Path(__file__).resolve().parents[2])[-3:] == 'gym':
+if str(Path(__file__).resolve().parents[2])[-3:] == 'gym':  # 后续改成re判断
     print("Using Gym Version")
     time.sleep(1)
 elif str(Path(__file__).resolve().parents[3])[-4:] == 'DBRL':
@@ -45,8 +45,9 @@ class DogfightEnv(Env):
         enemy_slot=3,
         missile_slot=1,
         rendering=False,
+        record_status=0,
     ) -> None:
-        
+
         self.host = host
         self.port = port
         self.nof = 0
@@ -54,6 +55,15 @@ class DogfightEnv(Env):
         self.plane_slot = plane_slot
         self.enemy_slot = enemy_slot
         self.missile_slot = missile_slot
+        self.record_status = record_status
+        
+        if self.record_status > 0:
+            try:
+                self.status
+            except AttributeError:
+                self.status = []
+
+            self.epoch_status = []
 
         try:
             planes = df.get_planes_list()
@@ -300,6 +310,26 @@ class DogfightEnv(Env):
         
         df.update_scene()
         self.nof += 1
+        
+        if self.record_status > 0 and self.nof % self.record_status == 0:
+
+            self.epoch_status.append(
+                df.get_plane_state(self.planeID)['position'] +
+                [df.get_plane_state(self.planeID)['heading']] + 
+                [df.get_plane_state(self.planeID)['pitch_attitude']] + 
+                [df.get_plane_state(self.planeID)['roll_attitude']] + 
+                [df.get_plane_state(self.planeID)['horizontal_speed']] +
+                [df.get_plane_state(self.planeID)['vertical_speed']] +
+                [df.get_plane_state(self.planeID)['linear_speed']] +
+
+                df.get_missile_state(self.missileID)['position'] +
+                [df.get_missile_state(self.missileID)['heading']] + 
+                [df.get_missile_state(self.missileID)['pitch_attitude']] + 
+                [df.get_missile_state(self.missileID)['roll_attitude']] + 
+                [df.get_missile_state(self.missileID)['horizontal_speed']] +
+                [df.get_missile_state(self.missileID)['vertical_speed']] +
+                [df.get_missile_state(self.missileID)['linear_speed']]
+            )
 
         terminate = self.terminate()
 
@@ -348,6 +378,12 @@ class DogfightEnv(Env):
     def reset(
         self,
     ): 
+
+        if self.record_status > 0:
+            self.status.append(self.epoch_status)
+
+            np.save('./log/evade_status_record', self.status)
+
         self.__init__(
             host=self.host,
             port=self.port,
@@ -355,6 +391,7 @@ class DogfightEnv(Env):
             enemy_slot=self.enemy_slot,
             missile_slot=self.missile_slot,
             rendering=self.rendering,
+            record_status=self.record_status
         )
 
         plane_state = df.get_plane_state(self.planeID)
