@@ -1,12 +1,21 @@
 import sys
 import time
+import argparse
 
 sys.path.append('.')
 
 from src.environments.dogfightEnv.dogfight_sandbox_hg2.network_client_example import dogfight_client as df
 
-# Enter the IP and port displayed in top-left corner of DogFight screen
-df.connect("192.168.239.1", 50888)
+def parse_args():
+    parser = argparse.ArgumentParser(description='TBD')
+    parser.add_argument('--host', default='10.184.0.0', help='specifies Harfang host id')
+    parser.add_argument('--port', default='50888', help='specifies Harfang port id')
+    args = parser.parse_args()
+    return args
+
+args = parse_args()
+
+df.connect(args.host, int(args.port))
 
 planes = df.get_planes_list()
 
@@ -17,7 +26,7 @@ df.set_plane_thrust(planes[1], 1)
 
 df.set_client_update_mode(True)
 
-
+# Thrust
 t = 0
 while t < 1:
     df.display_2DText([0.4, 0.7], "Thrust", 0.1, [1, 0.5, 0, 1])
@@ -30,6 +39,7 @@ df.activate_post_combustion(planes[1])
 
 df.set_plane_pitch(planes[1], -0.5)
 
+# Pitch
 p = 0
 while p < 15:
     df.display_2DText([0.4, 0.7], "Pitch", 0.1, [1, 0.5, 0, 1])
