@@ -46,6 +46,7 @@ class DogfightEnv(Env):
         missile_slot=1,
         rendering=False,
         record_status=0,
+        flare_active=False,
     ) -> None:
 
         self.host = host
@@ -56,6 +57,7 @@ class DogfightEnv(Env):
         self.enemy_slot = enemy_slot
         self.missile_slot = missile_slot
         self.record_status = record_status
+        self.flare_active = flare_active
         
         if self.record_status > 0:
             try:
@@ -129,20 +131,27 @@ class DogfightEnv(Env):
         df.set_missile_target(self.missileID, self.planeID)
         df.set_missile_life_delay(self.missileID, 30)
 
+        action_space_low = np.array([
+            0,  # Flaps 襟翼
+            -1,  # Pitch 俯仰角
+            -1,  # Roll 翻滚角
+            -1,  # Yaw 偏航角
+        ])
+
+        action_space_high = np.array([
+            1,
+            1,
+            1,
+            1,
+        ])
+
+        if self.flare_active:  # Flare 干扰弹
+            action_space_low = np.append(action_space_low, 0)
+            action_space_high = np.append(action_space_high, 1)
 
         self.action_space = Box(
-            low=np.array([
-                0,  # Flaps 襟翼
-                -1,  # Pitch 俯仰角
-                -1,  # Roll 翻滚角
-                -1,  # Yaw 偏航角
-            ]),
-            high=np.array([
-                1,
-                1,
-                1,
-                1,
-            ]),
+            low=action_space_low,
+            high=action_space_high,
         )
 
         self.observation_space = Box(
