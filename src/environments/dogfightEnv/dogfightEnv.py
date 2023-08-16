@@ -46,7 +46,7 @@ class DogfightEnv(Env):
         missile_slot=1,
         rendering=False,
         record_status=0,
-        flare_active=False,
+        flare_enable=False,
     ) -> None:
 
         self.host = host
@@ -57,8 +57,9 @@ class DogfightEnv(Env):
         self.enemy_slot = enemy_slot
         self.missile_slot = missile_slot
         self.record_status = record_status
-        self.flare_active = flare_active
-        
+        self.flare_enable = flare_enable
+        self.flare_active = False
+
         if self.record_status > 0:
             try:
                 self.status
@@ -145,7 +146,7 @@ class DogfightEnv(Env):
             1,
         ])
 
-        if self.flare_active:  # Flare 干扰弹
+        if self.flare_enable:  # Flare 干扰弹
             action_space_low = np.append(action_space_low, 0)
             action_space_high = np.append(action_space_high, 1)
 
@@ -302,6 +303,11 @@ class DogfightEnv(Env):
             df.set_plane_pitch(self.planeID, float(action[1]))
             df.set_plane_roll(self.planeID, float(action[2]))
             df.set_plane_yaw(self.planeID, float(action[3]))
+            if self.flare_enable and not self.flare_active:
+                if float(action[4]) >= 0.99:
+                    self.flare_active = True
+                    self.setFlare()
+
         elif actionType == 'Flaps' or actionType == 'flaps':
             df.set_plane_flaps(self.planeID, action)
         elif actionType == 'Pitch' or actionType == 'pitch':
@@ -311,12 +317,82 @@ class DogfightEnv(Env):
         elif actionType == 'Yaw' or actionType == 'yaw':
             df.set_plane_yaw(self.planeID, action)
 
+    def setFlare(
+        self,
+    ):
+        planes = df.get_planes_list()
+        plane_id = planes[self.plane_slot]
+
+        missiles = df.get_machine_missiles_list(plane_id)
+
+        self.flare_slot = 0
+        self.flare_id = missiles[self.flare_slot]
+
+
+        df.fire_missile(plane_id, self.flare_slot)
+
+        df.set_machine_custom_physics_mode(self.flare_id, True)
+
+        df.set_missile_life_delay(self.flare_id, 10)
+
+        df.update_scene()
+
+
+        flare_state = df.get_missile_state(self.flare_id)
+        self.x, self.y, self.z = flare_state["position"][0], flare_state["position"][1], flare_state["position"][2]
+        self.y_init = self.y
+        self.z_init = self.z
+        self.v_init = df.get_plane_state(planes[self.plane_slot])['linear_speed']
+        self.w_init = df.get_plane_state(planes[self.plane_slot])['vertical_speed']
+
+        self.flare_matrix = [
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1,
+            self.x, self.y, self.z,
+        ]
+
+        # Linear displacement vector in m.s-1
+        self.flare_speed_vector = [1, 1, 1]
+
+        # Custom missile movements
+        self.flare_active_time = 0
+
+
+
+    def flare_step(
+        self,
+    ):
+        frame_time_step = 1/60
+        
+        if not missile_state["wreck"]:
+            missile_state = df.get_missile_state(self.flare_id)
+            self.flare_matrix[9] = self.x
+            self.flare_matrix[10] = self.y
+            self.flare_matrix[11] = self.z
+
+            df.update_machine_kinetics(self.flare_id, self.flare_matrix, self.flare_speed_vector)
+            df.update_scene()
+            self.x = self.x
+            self.y = self.y_init + self.w_init * self.flare_active_time - 0.5 * 10 * self.flare_active_time * self.flare_active_time
+            self.z = self.z_init + self.v_init * self.flare_active_time
+            
+
+            # Compute speed vector, used by missile engine smoke
+            self.flare_speed_vector = [(self.x-self.flare_matrix[9]) / frame_time_step, (self.y - self.flare_matrix[10]) / frame_time_step, (self.z - self.flare_matrix[11]) / frame_time_step]
+
+            self.flare_active_time += frame_time_step
+
+
     def step(self, action):
 
         t_begin = time.time()
 
         self.sendAction(action)
         
+        if self.flare_enable and self.flare_active:
+            self.flare_step()
+
         df.update_scene()
         self.nof += 1
         
