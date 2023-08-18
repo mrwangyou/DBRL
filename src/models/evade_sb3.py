@@ -24,6 +24,7 @@ def parse_args():
     # parser.add_argument('--modelPath', default=None, help='specifies the pre-trained model. Only works when --train is specified')
     parser.add_argument('--recordResult', action='store_true', help='specifies whether to record the evaluating result of DBRL. Only works when --test is specified')
     parser.add_argument('--recordStatus', type=int, default=0, help='specifies the frequency of aircraft status recording during test flight. Only works when --test is specified')
+    parser.add_argument('--flareEnable', action='store_true', help='specifies whether to activate the flare countermeasure')
     args = parser.parse_args()
     return args
 
@@ -38,6 +39,7 @@ env = gym.make(
     missile_slot=args.missileSlot,
     rendering=True if args.playSpeed else False,
     record_status=args.recordStatus,
+    flare_enable=args.flareEnable,
 )
 
 n_actions = env.action_space.shape[-1]
@@ -77,9 +79,6 @@ if args.train:
 if args.test:
     model = eval(args.model).load("./log/{}".format(msg))
 
-    win = 0
-    episode = 0
-
     if args.recordResult:
         if os.path.exists('./log/{}_recordResult.txt'.format(msg)):
             f = open('./log/{}_recordResult.txt'.format(msg), 'r')
@@ -89,7 +88,8 @@ if args.test:
             episode = int(line.split()[2])
             f.close()
         else:
-            pass
+            win = 0
+            episode = 0
 
     obs = env.reset()
     while True:

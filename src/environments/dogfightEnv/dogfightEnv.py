@@ -358,15 +358,13 @@ class DogfightEnv(Env):
         # Custom missile movements
         self.flare_active_time = 0
 
-
-
     def flare_step(
         self,
     ):
         frame_time_step = 1/60
         
-        if not missile_state["wreck"]:
-            missile_state = df.get_missile_state(self.flare_id)
+        flare_state = df.get_missile_state(self.flare_id)
+        if not flare_state["wreck"]:
             self.flare_matrix[9] = self.x
             self.flare_matrix[10] = self.y
             self.flare_matrix[11] = self.z
@@ -476,7 +474,8 @@ class DogfightEnv(Env):
             enemy_slot=self.enemy_slot,
             missile_slot=self.missile_slot,
             rendering=self.rendering,
-            record_status=self.record_status
+            record_status=self.record_status,
+            flare_enable=self.flare_enable,
         )
 
         plane_state = df.get_plane_state(self.planeID)
