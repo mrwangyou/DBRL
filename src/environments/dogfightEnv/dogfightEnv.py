@@ -380,6 +380,11 @@ class DogfightEnv(Env):
             self.flare_speed_vector = [(self.x-self.flare_matrix[9]) / frame_time_step, (self.y - self.flare_matrix[10]) / frame_time_step, (self.z - self.flare_matrix[11]) / frame_time_step]
 
             self.flare_active_time += frame_time_step
+        
+        if random.random() < .5:
+            df.set_missile_target(self.missileID, self.planeID)
+        else:
+            df.set_missile_target(self.missileID, self.flare_id)
 
 
     def step(self, action):
