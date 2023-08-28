@@ -10,10 +10,19 @@ from gym import Env
 from gym.spaces import Box, Discrete
 from pathlib import Path
 
-if str(Path(__file__).resolve().parents[2])[-3:] == 'gym':  # 后续改成re判断
+
+if re.findall('dogfightEnv\.py$', str(Path(__file__).resolve())) and \
+   re.findall('dogfightEnv$', str(Path(__file__).resolve().parents[0])) and \
+   re.findall('envs$', str(Path(__file__).resolve().parents[1])) and \
+   re.findall('gym$', str(Path(__file__).resolve().parents[2])):
     print("Using Gym Version")
     time.sleep(1)
-elif str(Path(__file__).resolve().parents[3])[-4:] == 'DBRL':
+
+elif re.findall('dogfightEnv\.py$', str(Path(__file__).resolve())) and \
+     re.findall('dogfightEnv$', str(Path(__file__).resolve().parents[0])) and \
+     re.findall('environments$', str(Path(__file__).resolve().parents[1])) and \
+     re.findall('src$', str(Path(__file__).resolve().parents[2])) and \
+     re.findall('DBRL$', str(Path(__file__).resolve().parents[3])):
     print("Using DBRL Version")
     time.sleep(1)
 
