@@ -44,7 +44,7 @@ except:
     time.sleep(1)
 
 
-class DogfightEnv(Env):
+class DFEvadeEnv(Env):
 
     def __init__(
         self,
