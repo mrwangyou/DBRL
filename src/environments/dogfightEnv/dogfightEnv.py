@@ -26,25 +26,24 @@ elif re.findall('dogfightEnv\.py$', str(Path(__file__).resolve())) and \
     print("Using DBRL Version")
     time.sleep(1)
 
-sys.path.append('./src/')
-sys.path.append('./src/environments/dogfightEnv/')
-sys.path.append('./src/environments/dogfightEnv/dogfight_sandbox_hg2/network_client_example/')
-sys.path.append('gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example/')
+# You can also replace `import socket_lib` in `dogfight_sandbox_hg2\network_client_example\dogfight_client.py` with `from . import socket_lib` to achieve the same function as the following line of code
+sys.path.append(str(Path(__file__).resolve().parents[2]) + '/envs/dogfightEnv/dogfight_sandbox_hg2/network_client_example/')
 
+from initialization import *
 
 try:
-    from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import \
+    from .dogfight_sandbox_hg2.network_client_example import \
         dogfight_client as df
     print("Gym")
     time.sleep(1)
 except:
-    from dogfightEnv.dogfight_sandbox_hg2.network_client_example import \
+    from .dogfight_sandbox_hg2.network_client_example import \
         dogfight_client as df
     print("DBRL")
     time.sleep(1)
 
 
-class DFEvadeEnv(Env):
+class DogfightEnv(Env):
 
     def __init__(
         self,
