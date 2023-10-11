@@ -1,8 +1,10 @@
 import random
+import os
 import re
 import sys
 import time
 import warnings
+import math
 
 import gym
 import numpy as np
@@ -29,7 +31,7 @@ elif re.findall('dogfightEnv\.py$', str(Path(__file__).resolve())) and \
 # You can also replace `import socket_lib` in `dogfight_sandbox_hg2\network_client_example\dogfight_client.py` with `from . import socket_lib` to achieve the same function as the following line of code
 sys.path.append(str(Path(__file__).resolve().parents[2]) + '/envs/dogfightEnv/dogfight_sandbox_hg2/network_client_example/')
 
-from initialization import *
+# from initialization import *
 
 try:
     from .dogfight_sandbox_hg2.network_client_example import \
@@ -54,7 +56,9 @@ class DogfightEnv(Env):
         missile_slot=1,
         rendering=False,
         record_status=0,
+        throttle_enable=False,
         flare_enable=False,
+        msg=None,
     ) -> None:
 
         self.host = host
@@ -65,16 +69,18 @@ class DogfightEnv(Env):
         self.enemy_slot = enemy_slot
         self.missile_slot = missile_slot
         self.record_status = record_status
+        self.throttle_enable = throttle_enable
         self.flare_enable = flare_enable
         self.flare_active = False
+        self.msg = msg
 
-        if self.record_status > 0:
-            try:
-                self.status
-            except AttributeError:
-                self.status = []
+        # if self.record_status > 0:
+        #     try:
+        #         self.status
+        #     except AttributeError:
+        #         self.status = []
 
-            self.epoch_status = []
+        #     self.epoch_status = []
 
         try:
             planes = df.get_planes_list()
@@ -394,6 +400,34 @@ class DogfightEnv(Env):
         else:
             df.set_missile_target(self.missileID, self.flare_id)
 
+    def XYtoGPS(self, x, y, ref_lat=0, ref_lon=0):
+        CONSTANTS_RADIUS_OF_EARTH = 6378137.  # meters (m)
+        x_rad = float(x) / CONSTANTS_RADIUS_OF_EARTH
+        y_rad = float(y) / CONSTANTS_RADIUS_OF_EARTH
+        c = math.sqrt(x_rad * x_rad + y_rad * y_rad)
+
+        ref_lat_rad = math.radians(ref_lat)
+        ref_lon_rad = math.radians(ref_lon)
+
+        ref_sin_lat = math.sin(ref_lat_rad)
+        ref_cos_lat = math.cos(ref_lat_rad)
+
+        if abs(c) > 0:
+            sin_c = math.sin(c)
+            cos_c = math.cos(c)
+
+            lat_rad = math.asin(cos_c * ref_sin_lat + (x_rad * sin_c * ref_cos_lat) / c)
+            lon_rad = (ref_lon_rad + math.atan2(y_rad * sin_c, c * ref_cos_lat * cos_c - x_rad * ref_sin_lat * sin_c))
+
+            lat = math.degrees(lat_rad)
+            lon = math.degrees(lon_rad)
+
+        else:
+            lat = math.degrees(ref_lat)
+            lon = math.degrees(ref_lon)
+
+        return lat, lon
+
 
     def step(self, action):
 
@@ -407,25 +441,47 @@ class DogfightEnv(Env):
         df.update_scene()
         self.nof += 1
         
-        if self.record_status > 0 and self.nof % self.record_status == 0:
+        # if self.record_status > 0 and self.nof % self.record_status == 0:
 
-            self.epoch_status.append(
-                df.get_plane_state(self.planeID)['position'] +
-                [df.get_plane_state(self.planeID)['heading']] + 
-                [df.get_plane_state(self.planeID)['pitch_attitude']] + 
-                [df.get_plane_state(self.planeID)['roll_attitude']] + 
-                [df.get_plane_state(self.planeID)['horizontal_speed']] +
-                [df.get_plane_state(self.planeID)['vertical_speed']] +
-                [df.get_plane_state(self.planeID)['linear_speed']] +
+        #     self.epoch_status.append(
+        #         df.get_plane_state(self.planeID)['position'] +
+        #         [df.get_plane_state(self.planeID)['heading']] + 
+        #         [df.get_plane_state(self.planeID)['pitch_attitude']] + 
+        #         [df.get_plane_state(self.planeID)['roll_attitude']] + 
+        #         [df.get_plane_state(self.planeID)['horizontal_speed']] +
+        #         [df.get_plane_state(self.planeID)['vertical_speed']] +
+        #         [df.get_plane_state(self.planeID)['linear_speed']] +
 
-                df.get_missile_state(self.missileID)['position'] +
-                [df.get_missile_state(self.missileID)['heading']] + 
-                [df.get_missile_state(self.missileID)['pitch_attitude']] + 
-                [df.get_missile_state(self.missileID)['roll_attitude']] + 
-                [df.get_missile_state(self.missileID)['horizontal_speed']] +
-                [df.get_missile_state(self.missileID)['vertical_speed']] +
-                [df.get_missile_state(self.missileID)['linear_speed']]
+        #         df.get_missile_state(self.missileID)['position'] +
+        #         [df.get_missile_state(self.missileID)['heading']] + 
+        #         [df.get_missile_state(self.missileID)['pitch_attitude']] + 
+        #         [df.get_missile_state(self.missileID)['roll_attitude']] + 
+        #         [df.get_missile_state(self.missileID)['horizontal_speed']] +
+        #         [df.get_missile_state(self.missileID)['vertical_speed']] +
+        #         [df.get_missile_state(self.missileID)['linear_speed']]
+        #     )
+
+        if self.record_status:
+            if self.nof == 1:
+                path = r'./log/'
+                if not os.path.exists(path):
+                    os.mkdir(path)
+                file = open('./log/{}_status_record.txt'.format(self.msg), 'w')
+                file.write('FileType=text/acmi/tacview\nFileVersion=2.1\n0,ReferenceTime=2022-10-01T00:00:00Z\n0,Title = test simple aircraft\n1000000,T=160.123456|24.8976763|0, Type=Ground+Static+Building, Name=Competition, EngagementRange=30000\n')
+            else:
+                file = open('./log/{}_status_record.txt'.format(self.msg), 'a')
+            file.write('#{}\n'.format(self.nof * df.get_timestep()['timestep']))
+            if self.nof == 1:
+                initMsg = ',Name=F16,Type=Air+FixedWing,Coalition=Enemies,Color=Blue,Mach=0.800,ShortName=F16,RadarMode=1,RadarRange=40000,RadarHorizontalBeamwidth=60,RadarVerticalBeamwidth=60'
+            else:
+                initMsg = ''
+            file.write("1,T={0[0]}|{0[1]}|{1}{2}\n".format(
+                self.XYtoGPS(self.getProperty('position')[0], self.getProperty('position')[1]), 
+                self.getProperty('position')[2],
+                initMsg
+                )
             )
+            file.close()
 
         terminate = self.terminate()
 
@@ -475,10 +531,10 @@ class DogfightEnv(Env):
         self,
     ): 
 
-        if self.record_status > 0:
-            self.status.append(self.epoch_status)
+        # if self.record_status > 0:
+        #     self.status.append(self.epoch_status)
 
-            np.save('./log/evade_status_record', self.status)
+        #     np.save('./log/evade_status_record', self.status)
 
         self.__init__(
             host=self.host,
@@ -488,7 +544,9 @@ class DogfightEnv(Env):
             missile_slot=self.missile_slot,
             rendering=self.rendering,
             record_status=self.record_status,
+            throttle_enable=self.throttle_enable,
             flare_enable=self.flare_enable,
+            msg=self.msg
         )
 
         plane_state = df.get_plane_state(self.planeID)
