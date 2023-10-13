@@ -31,7 +31,7 @@ elif re.findall('dogfightEnv\.py$', str(Path(__file__).resolve())) and \
 # You can also replace `import socket_lib` in `dogfight_sandbox_hg2\network_client_example\dogfight_client.py` with `from . import socket_lib` to achieve the same function as the following line of code
 sys.path.append(str(Path(__file__).resolve().parents[2]) + '/envs/dogfightEnv/dogfight_sandbox_hg2/network_client_example/')
 
-# from initialization import *
+from initialization import *
 
 try:
     from .dogfight_sandbox_hg2.network_client_example import \
@@ -69,8 +69,6 @@ class DogfightEnv(Env):
         self.enemy_slot = enemy_slot
         self.missile_slot = missile_slot
         self.record_status = record_status
-        self.throttle_enable = throttle_enable
-        self.flare_enable = flare_enable
         self.flare_active = False
         self.msg = msg
 
@@ -146,27 +144,13 @@ class DogfightEnv(Env):
         df.set_missile_target(self.missileID, self.planeID)
         df.set_missile_life_delay(self.missileID, 30)
 
-        action_space_low = np.array([
-            0,  # Flaps 襟翼
-            -1,  # Pitch 俯仰角
-            -1,  # Roll 翻滚角
-            -1,  # Yaw 偏航角
-        ])
-
-        action_space_high = np.array([
-            1,
-            1,
-            1,
-            1,
-        ])
-
-        if self.flare_enable:  # Flare 干扰弹
-            action_space_low = np.append(action_space_low, 0)
-            action_space_high = np.append(action_space_high, 1)
-
-        self.action_space = Box(
-            low=action_space_low,
-            high=action_space_high,
+        self.action_space, self.action_type = action_space(
+            pitch_enable=True,
+            roll_enable=True,
+            yaw_enable=True,
+            flaps_enable=True,
+            throttle_enable=throttle_enable,
+            flare_enable=flare_enable
         )
 
         self.observation_space = Box(
@@ -313,14 +297,14 @@ class DogfightEnv(Env):
         actionType=None,
     ):
         if actionType == None:
-            df.set_plane_flaps(self.planeID, float(action[0]))
-            df.set_plane_pitch(self.planeID, float(action[1]))
-            df.set_plane_roll(self.planeID, float(action[2]))
-            df.set_plane_yaw(self.planeID, float(action[3]))
-            if self.flare_enable and not self.flare_active:
-                if float(action[4]) >= 0.99:
-                    self.flare_active = True
-                    self.setFlare()
+            for idx, value in enumerate(self.action_type):
+                if value[0] == '_':
+                    eval(value[1:])(self.planeID, float(action[idx]))
+
+                elif value == 'Flare' and not self.flare_active:
+                    if float(action[idx]) >= 0.99:
+                        self.flare_active = True
+                        self.setFlare()
 
         elif actionType == 'Flaps' or actionType == 'flaps':
             df.set_plane_flaps(self.planeID, action)
