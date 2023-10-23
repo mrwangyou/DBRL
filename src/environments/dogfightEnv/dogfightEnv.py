@@ -28,6 +28,7 @@ elif re.findall('dogfightEnv\.py$', str(Path(__file__).resolve())) and \
     print("Using DBRL Version")
     time.sleep(1)
 
+sys.path.append(str(Path(__file__).resolve().parents[2]) + '/envs/dogfightEnv')
 # You can also replace `import socket_lib` in `dogfight_sandbox_hg2\network_client_example\dogfight_client.py` with `from . import socket_lib` to achieve the same function as the following line of code
 sys.path.append(str(Path(__file__).resolve().parents[2]) + '/envs/dogfightEnv/dogfight_sandbox_hg2/network_client_example/')
 
@@ -69,16 +70,10 @@ class DogfightEnv(Env):
         self.enemy_slot = enemy_slot
         self.missile_slot = missile_slot
         self.record_status = record_status
+        self.throttle_enable = throttle_enable
+        self.flare_enable = flare_enable
         self.flare_active = False
         self.msg = msg
-
-        # if self.record_status > 0:
-        #     try:
-        #         self.status
-        #     except AttributeError:
-        #         self.status = []
-
-        #     self.epoch_status = []
 
         try:
             planes = df.get_planes_list()
@@ -373,7 +368,6 @@ class DogfightEnv(Env):
             self.y = self.y_init + self.w_init * self.flare_active_time - 0.5 * 10 * self.flare_active_time * self.flare_active_time
             self.z = self.z_init + self.v_init * self.flare_active_time
             
-
             # Compute speed vector, used by missile engine smoke
             self.flare_speed_vector = [(self.x-self.flare_matrix[9]) / frame_time_step, (self.y - self.flare_matrix[10]) / frame_time_step, (self.z - self.flare_matrix[11]) / frame_time_step]
 
@@ -424,26 +418,6 @@ class DogfightEnv(Env):
 
         df.update_scene()
         self.nof += 1
-        
-        # if self.record_status > 0 and self.nof % self.record_status == 0:
-
-        #     self.epoch_status.append(
-        #         df.get_plane_state(self.planeID)['position'] +
-        #         [df.get_plane_state(self.planeID)['heading']] + 
-        #         [df.get_plane_state(self.planeID)['pitch_attitude']] + 
-        #         [df.get_plane_state(self.planeID)['roll_attitude']] + 
-        #         [df.get_plane_state(self.planeID)['horizontal_speed']] +
-        #         [df.get_plane_state(self.planeID)['vertical_speed']] +
-        #         [df.get_plane_state(self.planeID)['linear_speed']] +
-
-        #         df.get_missile_state(self.missileID)['position'] +
-        #         [df.get_missile_state(self.missileID)['heading']] + 
-        #         [df.get_missile_state(self.missileID)['pitch_attitude']] + 
-        #         [df.get_missile_state(self.missileID)['roll_attitude']] + 
-        #         [df.get_missile_state(self.missileID)['horizontal_speed']] +
-        #         [df.get_missile_state(self.missileID)['vertical_speed']] +
-        #         [df.get_missile_state(self.missileID)['linear_speed']]
-        #     )
 
         if self.record_status:
             if self.nof == 1:
@@ -514,11 +488,6 @@ class DogfightEnv(Env):
     def reset(
         self,
     ): 
-
-        # if self.record_status > 0:
-        #     self.status.append(self.epoch_status)
-
-        #     np.save('./log/evade_status_record', self.status)
 
         self.__init__(
             host=self.host,

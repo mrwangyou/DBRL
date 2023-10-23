@@ -20,7 +20,7 @@ def action_space(
     if roll_enable:  # 滚转角
         action_infimum = np.append(action_infimum, -1)
         action_supermum = np.append(action_supermum, 1)
-        action_type = action_type + ['_df.set_plabe_roll']
+        action_type = action_type + ['_df.set_plane_roll']
     if yaw_enable:  # 偏航角
         action_infimum = np.append(action_infimum, -1)
         action_supermum = np.append(action_supermum, 1)
