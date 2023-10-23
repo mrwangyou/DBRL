@@ -1,2 +1,2 @@
-from ActionSpace import *
-from ObservationSpace import *
+from .ActionSpace import *
+from .ObservationSpace import *
