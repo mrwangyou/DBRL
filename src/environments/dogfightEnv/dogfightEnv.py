@@ -59,6 +59,10 @@ class DogfightEnv(Env):
         record_status=0,
         throttle_enable=False,
         flare_enable=False,
+        ego_pose_enable=True,
+        oppo_pose_enable=False,
+        missile_pose_enable=True,
+        missile_relative_azimuth_enable=False,
         msg=None,
     ) -> None:
 
@@ -73,12 +77,16 @@ class DogfightEnv(Env):
         self.throttle_enable = throttle_enable
         self.flare_enable = flare_enable
         self.flare_active = False
+        self.ego_pose_enable = ego_pose_enable
+        self.oppo_pose_enable = oppo_pose_enable
+        self.missile_pose_enable = missile_pose_enable
+        self.missile_relative_azimuth_enable = missile_relative_azimuth_enable
         self.msg = msg
 
         try:
             planes = df.get_planes_list()
         except AttributeError:
-            print('Run for the first time')
+            print('Connecting...')
             df.connect(host, int(port))
             time.sleep(2)
             planes = df.get_planes_list()
@@ -148,39 +156,49 @@ class DogfightEnv(Env):
             flare_enable=flare_enable
         )
 
-        self.observation_space = Box(
-            low=np.array([  # simple normalized
-                # ego
-                -300,  # x / 100
-                -300,  # y / 100
-                -1,    # z / 50
-                0,     # heading
-                -360,  # pitch_attitude * 4
-                -360,  # roll_attitude * 4
-                # oppo
-                -300,  # x / 100
-                -300,  # y / 100
-                -1,    # z / 50
-                -315,  # heading * 100
-                -315,  # pitch_attitude * 100
-                -315,  # roll_attitude * 100
-            ]),
-            high=np.array([
-                300,
-                300,
-                200,
-                360,
-                360,
-                360,
-                300,
-                300,
-                200,
-                315,
-                315,
-                315,
-            ]),
-            dtype=np.float64
+        self.observation_space = observation_space(
+            ego_plane_position=ego_pose_enable,
+            ego_plane_attitude=ego_pose_enable,
+            oppo_plane_position=oppo_pose_enable,
+            oppo_plane_attitude=oppo_pose_enable,
+            missile_position=missile_pose_enable,
+            missile_attitude=missile_pose_enable,
+            missile_relative_azimuth=missile_relative_azimuth_enable,
         )
+
+        # self.observation_space = Box(
+        #     low=np.array([  # simple normalized
+        #         # ego
+        #         -300,  # x / 100
+        #         -300,  # y / 100
+        #         -1,    # z / 50
+        #         0,     # heading
+        #         -360,  # pitch_attitude * 4
+        #         -360,  # roll_attitude * 4
+        #         # oppo
+        #         -300,  # x / 100
+        #         -300,  # y / 100
+        #         -1,    # z / 50
+        #         -315,  # heading * 100
+        #         -315,  # pitch_attitude * 100
+        #         -315,  # roll_attitude * 100
+        #     ]),
+        #     high=np.array([
+        #         300,
+        #         300,
+        #         200,
+        #         360,
+        #         360,
+        #         360,
+        #         300,
+        #         300,
+        #         200,
+        #         315,
+        #         315,
+        #         315,
+        #     ]),
+        #     dtype=np.float64
+        # )
 
         
         if self.rendering:
@@ -233,6 +251,15 @@ class DogfightEnv(Env):
                 plane_state['pitch_attitude'],
                 plane_state['roll_attitude'],
             ]
+        elif prop == 'poseNorm':
+            return [
+                plane_state['position'][0] / 100,
+                plane_state['position'][2] / 100,
+                plane_state['position'][1] / 50,
+                plane_state['heading'],
+                plane_state['pitch_attitude'] * 4,
+                plane_state['roll_attitude'] * 4,
+            ]
         elif prop == 'velocity':
             warnings.warn('三个值为速度在欧拉角上的分量, 与JSBSim中的速度不同')
             return [
@@ -243,12 +270,32 @@ class DogfightEnv(Env):
         elif prop == 'poseMissile':
             return [
                 missile_state['position'][0],
-                missile_state['position'][1],
                 missile_state['position'][2],
+                missile_state['position'][1],
                 missile_state['Euler_angles'][0],
                 missile_state['Euler_angles'][1],
                 missile_state['Euler_angles'][2],
             ]
+        elif prop == 'poseMissleNorm':
+            return [
+                missile_state['position'][0] / 100,
+                missile_state['position'][2] / 100,
+                missile_state['position'][1] / 50,
+                missile_state['Euler_angles'][0] * 100,
+                missile_state['Euler_angles'][1] * 100,
+                missile_state['Euler_angles'][2] * 100,
+            ]
+        elif prop == 'azimuthRel':
+            azimuth = [
+                missile_state['position'][0] - plane_state['position'][0],
+                missile_state['position'][2] - plane_state['position'][2],
+                missile_state['position'][1] - plane_state['position'][1],
+            ]
+            azimuthRel = [0, 0, 0]
+            for idx, value in enumerate(azimuth):
+                azimuthRel[idx] = value / np.linalg.norm(azimuth)
+            return azimuthRel
+
         else:
             raise Exception("Property {} doesn't exist!".format(prop))
 
@@ -406,6 +453,18 @@ class DogfightEnv(Env):
 
         return lat, lon
 
+    def getObservation(self):
+        ob = np.array([])
+        if self.ego_pose_enable:
+            ob = np.append(ob, self.getProperty('poseNorm'))
+        if self.oppo_pose_enable:
+            pass
+        if self.missile_pose_enable:
+            ob = np.append(ob, self.getProperty('poseMissleNorm'))
+        if self.missile_relative_azimuth_enable:
+            ob = np.append(ob, self.getProperty('azimuthRel'))
+        
+        return ob
 
     def step(self, action):
 
@@ -457,21 +516,23 @@ class DogfightEnv(Env):
         plane_state = df.get_plane_state(self.planeID)
         missile_state = df.get_missile_state(self.missileID)
 
-        ob = np.array([  # normalized
-            plane_state['position'][0] / 100,
-            plane_state['position'][2] / 100,
-            plane_state['position'][1] / 50,
-            plane_state['heading'],
-            plane_state['pitch_attitude'] * 4,
-            plane_state['roll_attitude'] * 4,
+        ob = self.getObservation()
 
-            missile_state['position'][0] / 100,
-            missile_state['position'][2] / 100,
-            missile_state['position'][1] / 50,
-            missile_state['Euler_angles'][0] * 100,
-            missile_state['Euler_angles'][1] * 100,
-            missile_state['Euler_angles'][2] * 100,
-        ])
+        # ob = np.array([  # normalized
+        #     plane_state['position'][0] / 100,
+        #     plane_state['position'][2] / 100,
+        #     plane_state['position'][1] / 50,
+        #     plane_state['heading'],
+        #     plane_state['pitch_attitude'] * 4,
+        #     plane_state['roll_attitude'] * 4,
+
+        #     missile_state['position'][0] / 100,
+        #     missile_state['position'][2] / 100,
+        #     missile_state['position'][1] / 50,
+        #     missile_state['Euler_angles'][0] * 100,
+        #     missile_state['Euler_angles'][1] * 100,
+        #     missile_state['Euler_angles'][2] * 100,
+        # ])
 
         if self.rendering:
             time.sleep(
@@ -499,27 +560,32 @@ class DogfightEnv(Env):
             record_status=self.record_status,
             throttle_enable=self.throttle_enable,
             flare_enable=self.flare_enable,
+            ego_pose_enable = self.ego_pose_enable,
+            oppo_pose_enable = self.oppo_pose_enable,
+            missile_pose_enable = self.missile_pose_enable,
+            missile_relative_azimuth_enable = self.missile_relative_azimuth_enable,
             msg=self.msg
         )
 
-        plane_state = df.get_plane_state(self.planeID)
-        missile_state = df.get_missile_state(self.missileID)
+        # plane_state = df.get_plane_state(self.planeID)
+        # missile_state = df.get_missile_state(self.missileID)
 
-        ob = np.array([  # normalized
-            plane_state['position'][0] / 100,
-            plane_state['position'][2] / 100,
-            plane_state['position'][1] / 50,
-            plane_state['heading'],
-            plane_state['pitch_attitude'] * 4,
-            plane_state['roll_attitude'] * 4,
+        ob = self.getObservation()
+        # ob = np.array([  # normalized
+        #     plane_state['position'][0] / 100,
+        #     plane_state['position'][2] / 100,
+        #     plane_state['position'][1] / 50,
+        #     plane_state['heading'],
+        #     plane_state['pitch_attitude'] * 4,
+        #     plane_state['roll_attitude'] * 4,
 
-            missile_state['position'][0] / 100,
-            missile_state['position'][2] / 100,
-            missile_state['position'][1] / 50,
-            missile_state['Euler_angles'][0] * 100,
-            missile_state['Euler_angles'][1] * 100,
-            missile_state['Euler_angles'][2] * 100,
-        ])
+        #     missile_state['position'][0] / 100,
+        #     missile_state['position'][2] / 100,
+        #     missile_state['position'][1] / 50,
+        #     missile_state['Euler_angles'][0] * 100,
+        #     missile_state['Euler_angles'][1] * 100,
+        #     missile_state['Euler_angles'][2] * 100,
+        # ])
 
         return ob
 

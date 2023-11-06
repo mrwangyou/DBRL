@@ -42,10 +42,15 @@ env = gym.make(
     plane_slot=args.plane_slot,
     enemy_slot=args.enemy_slot,
     missile_slot=args.missile_slot,
-    rendering=args.realtime,
+    # rendering=args.realtime,
+    rendering=False,
     record_status=args.record_status,
     throttle_enable=args.throttle_enable,
     flare_enable=args.flare_enable,
+    ego_pose_enable=True,
+    oppo_pose_enable=False,
+    missile_pose_enable=True,
+    missile_relative_azimuth_enable=True,
     msg=msg
 )
 
