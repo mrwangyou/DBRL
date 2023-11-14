@@ -27,6 +27,10 @@ def parse_args():
     parser.add_argument('--record-status', type=int, default=0, help='specifies the recording period for aircraft status recording during test flights. Only works when --test is specified')
     parser.add_argument('--throttle-enable', action='store_true', help='specifies whether to enable the throttle control')
     parser.add_argument('--flare-enable', action='store_true', help='specifies whether to enable the decoy flare')
+    parser.add_argument('--ego-pose-enable', action='store_true', help='')
+    parser.add_argument('--oppo-pose-enable', action='store_true', help='')
+    parser.add_argument('--missile-pose-enable', action='store_true', help='')
+    parser.add_argument('--missile-relative-azimuth-enable', action='store_true', help='')
     args = parser.parse_args()
     return args
 

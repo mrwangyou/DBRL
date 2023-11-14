@@ -33,6 +33,7 @@ sys.path.append(str(Path(__file__).resolve().parents[2]) + '/envs/dogfightEnv')
 sys.path.append(str(Path(__file__).resolve().parents[2]) + '/envs/dogfightEnv/dogfight_sandbox_hg2/network_client_example/')
 
 from initialization import *
+from models import *
 
 try:
     from .dogfight_sandbox_hg2.network_client_example import \
@@ -96,6 +97,9 @@ class DogfightEnv(Env):
         self.planeID = planes[self.plane_slot]
         self.enemyID = planes[self.enemy_slot]
 
+        missiles = df.get_machine_missiles_list(self.enemyID)
+        self.missileID = missiles[self.missile_slot]
+
         for i in planes:
             df.reset_machine(i)
         
@@ -107,45 +111,13 @@ class DogfightEnv(Env):
 
         df.set_renderless_mode(True)
 
-        t = 0
-        while t < 1:
-            plane_state = df.get_plane_state(self.enemyID)
-            df.update_scene()
-            t = plane_state["thrust_level"]
-        
-        df.activate_post_combustion(self.enemyID)
-        df.activate_post_combustion(self.planeID)
-
-        df.set_plane_pitch(self.enemyID, -0.5)
-        df.set_plane_pitch(self.planeID, -0.5)
-
-        p = 0
-        while p < 15:
-            plane_state = df.get_plane_state(self.enemyID)
-            df.update_scene()
-            p = plane_state["pitch_attitude"]
-
-        df.stabilize_plane(self.enemyID)
-        df.stabilize_plane(self.planeID)
-
-        df.retract_gear(self.enemyID)
-        df.retract_gear(self.planeID)
-
-        s = 0
-        while s < 1000:
-            plane_state = df.get_plane_state(self.enemyID)
-            df.update_scene()
-            s = plane_state["altitude"]
-        
-        df.set_plane_yaw(self.planeID, 1)
-
-        missiles = df.get_machine_missiles_list(self.enemyID)
-        self.missileID = missiles[self.missile_slot]
-
-        df.fire_missile(self.enemyID, self.missile_slot)
-
-        df.set_missile_target(self.missileID, self.planeID)
-        df.set_missile_life_delay(self.missileID, 30)
+        starts_on_carrier(
+            df=df, 
+            planeID=self.planeID,
+            enemyID=self.enemyID,
+            missile_slot=self.missile_slot,
+            missileID=self.missileID
+        )
 
         self.action_space, self.action_type = action_space(
             pitch_enable=True,
@@ -165,40 +137,6 @@ class DogfightEnv(Env):
             missile_attitude=missile_pose_enable,
             missile_relative_azimuth=missile_relative_azimuth_enable,
         )
-
-        # self.observation_space = Box(
-        #     low=np.array([  # simple normalized
-        #         # ego
-        #         -300,  # x / 100
-        #         -300,  # y / 100
-        #         -1,    # z / 50
-        #         0,     # heading
-        #         -360,  # pitch_attitude * 4
-        #         -360,  # roll_attitude * 4
-        #         # oppo
-        #         -300,  # x / 100
-        #         -300,  # y / 100
-        #         -1,    # z / 50
-        #         -315,  # heading * 100
-        #         -315,  # pitch_attitude * 100
-        #         -315,  # roll_attitude * 100
-        #     ]),
-        #     high=np.array([
-        #         300,
-        #         300,
-        #         200,
-        #         360,
-        #         360,
-        #         360,
-        #         300,
-        #         300,
-        #         200,
-        #         315,
-        #         315,
-        #         315,
-        #     ]),
-        #     dtype=np.float64
-        # )
 
         
         if self.rendering:
@@ -368,7 +306,6 @@ class DogfightEnv(Env):
         self.flare_slot = 0
         self.flare_id = missiles[self.flare_slot]
 
-
         df.fire_missile(plane_id, self.flare_slot)
 
         df.set_machine_custom_physics_mode(self.flare_id, True)
@@ -420,10 +357,15 @@ class DogfightEnv(Env):
 
             self.flare_active_time += frame_time_step
         
-        if random.random() < .5:
-            df.set_missile_target(self.missileID, self.planeID)
+        if df.get_missile_state(self.flare_id)['active']:
+
+            if random.random() < .5:
+                df.set_missile_target(self.missileID, self.planeID)
+            else:
+                df.set_missile_target(self.missileID, self.flare_id)
+
         else:
-            df.set_missile_target(self.missileID, self.flare_id)
+            df.set_missile_target(self.missileID, self.planeID)
 
     def XYtoGPS(self, x, y, ref_lat=0, ref_lon=0):
         CONSTANTS_RADIUS_OF_EARTH = 6378137.  # meters (m)
@@ -518,22 +460,6 @@ class DogfightEnv(Env):
 
         ob = self.getObservation()
 
-        # ob = np.array([  # normalized
-        #     plane_state['position'][0] / 100,
-        #     plane_state['position'][2] / 100,
-        #     plane_state['position'][1] / 50,
-        #     plane_state['heading'],
-        #     plane_state['pitch_attitude'] * 4,
-        #     plane_state['roll_attitude'] * 4,
-
-        #     missile_state['position'][0] / 100,
-        #     missile_state['position'][2] / 100,
-        #     missile_state['position'][1] / 50,
-        #     missile_state['Euler_angles'][0] * 100,
-        #     missile_state['Euler_angles'][1] * 100,
-        #     missile_state['Euler_angles'][2] * 100,
-        # ])
-
         if self.rendering:
             time.sleep(
                 max(0, df.get_timestep()['timestep'] - (time.time() - t_begin))
@@ -567,25 +493,7 @@ class DogfightEnv(Env):
             msg=self.msg
         )
 
-        # plane_state = df.get_plane_state(self.planeID)
-        # missile_state = df.get_missile_state(self.missileID)
-
         ob = self.getObservation()
-        # ob = np.array([  # normalized
-        #     plane_state['position'][0] / 100,
-        #     plane_state['position'][2] / 100,
-        #     plane_state['position'][1] / 50,
-        #     plane_state['heading'],
-        #     plane_state['pitch_attitude'] * 4,
-        #     plane_state['roll_attitude'] * 4,
-
-        #     missile_state['position'][0] / 100,
-        #     missile_state['position'][2] / 100,
-        #     missile_state['position'][1] / 50,
-        #     missile_state['Euler_angles'][0] * 100,
-        #     missile_state['Euler_angles'][1] * 100,
-        #     missile_state['Euler_angles'][2] * 100,
-        # ])
 
         return ob
 
