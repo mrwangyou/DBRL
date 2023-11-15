@@ -187,28 +187,69 @@ def getProperty(
 ```
 
 ---
+---
+
 
 DBRL-Dogfight提供了一个基于强化学习框架Gym的战斗机机动躲避智能决策仿真环境，作为环境的初始状态，智能体需要操控的飞机被另一架飞机发射的“流星”空空导弹锁定，智能体需要采取机动操纵躲避导弹的威胁。
 
-Dogfight 2环境的动作空间为：
+Dogfight 2环境提供可选的动作空间包括：
 
 ```python
-gym.spaces.Box(
-    low=np.array([0, -1, -1, -1]),
-    high=np.array([1, 1, 1, 1])
+if pitch_enable:
+    action_infimum = np.append(action_infimum, -1)
+    action_supermum = np.append(action_supermum, 1)
+if roll_enable:
+    action_infimum = np.append(action_infimum, -1)
+    action_supermum = np.append(action_supermum, 1)
+if yaw_enable:
+    action_infimum = np.append(action_infimum, -1)
+    action_supermum = np.append(action_supermum, 1)
+if flaps_enable:
+    action_infimum = np.append(action_infimum, 0)
+    action_supermum = np.append(action_supermum, 1)
+if throttle_enable:
+    action_infimum = np.append(action_infimum, 0)
+    action_supermum = np.append(action_supermum, 1)
+if flare_enable:
+    action_infimum = np.append(action_infimum, 0)
+    action_supermum = np.append(action_supermum, 1)
+action = Box(
+    low=action_infimum,
+    high=action_supermum,
 )
 ```
-其中四个维度分别表示对襟翼（Flaps）、俯仰角（Pitch）、滚转角（Roll）、偏航角（Yaw）的操控。
+其中六个维度分别表示对俯仰角（Pitch）、滚转角（Roll）、偏航角（Yaw）、襟翼（Flaps）、油门（Throttle）、干扰弹（Decoy flare）的操控。
 
-状态空间为：
+可选状态空间包括：
 
 ```python
-gym.spaces.Box(
-    low=np.array([-300, -300, -1, 0, -360, -360, -300, -300, -1, -315, -315, -315]),
-    high=np.array([300, 300, 200, 360, 360, 360, 300, 300, 200, 315, 315, 315])
+if ego_plane_position:
+    observation_infimum = np.append(observation_infimum, [-300, -300, -1])
+    observation_supermum = np.append(observation_supermum, [300, 300, 200])
+if ego_plane_attitude:
+    observation_infimum = np.append(observation_infimum, [0, -360, -360])
+    observation_supermum = np.append(observation_supermum, [360, 360, 360])
+if oppo_plane_position:
+    observation_infimum = np.append(observation_infimum, [-300, -300, -1])
+    observation_supermum = np.append(observation_supermum, [300, 300, 200])
+if oppo_plane_attitude:
+    observation_infimum = np.append(observation_infimum, [0, -360, -360])
+    observation_supermum = np.append(observation_supermum, [360, 360, 360])
+if missile_position:
+    observation_infimum = np.append(observation_infimum, [-300, -300, -1])
+    observation_supermum = np.append(observation_supermum, [300, 300, 200])
+if missile_attitude:
+    observation_infimum = np.append(observation_infimum, [-315, -315, -315])
+    observation_supermum = np.append(observation_supermum, [315, 315, 315])
+if missile_relative_azimuth:
+    observation_infimum = np.append(observation_infimum, [-1, -1, -1])
+    observation_supermum = np.append(observation_supermum, [1, 1, 1])
+observation = Box(
+    low=observation_infimum,
+    high=observation_supermum,
 )
 ```
-其中前六个维度分别表示飞机的X坐标（÷100）、Y坐标（÷100）、Z坐标（÷50）、偏航角、俯仰角（×4）、滚转角（×4），后六个维度分别表示导弹的X坐标（÷100）、Y坐标（÷100）、Z坐标（÷50）、偏航角（×100）、俯仰角（×100）、滚转角（×100）。
+可选飞机的X坐标（÷100）、Y坐标（÷100）、Z坐标（÷50）、偏航角、俯仰角（×4）、滚转角（×4），导弹的X坐标（÷100）、Y坐标（÷100）、Z坐标（÷50）、偏航角（×100）、俯仰角（×100）、滚转角（×100），导弹相对于飞机的方位角等。
 
 DogfightEnv的初始化需要与Dogfight 2软件进行连接，接受如下参数作为输入变量：
 
@@ -221,8 +262,17 @@ class DogfightEnv(Env):
         port='50888',
         plane_slot=1,
         enemy_slot=3,
-        missile_slot=0,
+        missile_slot=1,
         rendering=False,
+        record_status=0,
+        initial_state='carrier',
+        throttle_enable=False,
+        flare_enable=False,
+        ego_pose_enable=True,
+        oppo_pose_enable=False,
+        missile_pose_enable=True,
+        missile_relative_azimuth_enable=False,
+        msg=None,
     ) -> None:
 ```
 
@@ -232,7 +282,7 @@ class DogfightEnv(Env):
 </details>
 
 
-## <div align="center">未来工作</div>
+<!-- ## <div align="center">未来工作</div>
 
 1. 为不同强化学习模型提供不同的动作空间，包括现有的对飞机操纵面的控制，以及可能的以航向角，目标位姿等作为动作空间；
 
@@ -240,7 +290,7 @@ class DogfightEnv(Env):
 
 3. 实现不同强化学习基本模型，复现近年来国内外顶会顶刊上的智能空战算法；
 
-4. 提供多种格式的空战数据输出功能，例如支持JSBSim环境输出至Tacview等；
+4. 提供多种格式的空战数据输出功能，例如支持JSBSim环境输出至Tacview等； -->
 
 
 ## <div align="center">欢迎交流</div>
