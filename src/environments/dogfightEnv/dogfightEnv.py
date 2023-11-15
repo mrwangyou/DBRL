@@ -58,6 +58,7 @@ class DogfightEnv(Env):
         missile_slot=1,
         rendering=False,
         record_status=0,
+        initial_state='carrier',
         throttle_enable=False,
         flare_enable=False,
         ego_pose_enable=True,
@@ -75,6 +76,7 @@ class DogfightEnv(Env):
         self.enemy_slot = enemy_slot
         self.missile_slot = missile_slot
         self.record_status = record_status
+        self.initial_state = initial_state
         self.throttle_enable = throttle_enable
         self.flare_enable = flare_enable
         self.flare_active = False
@@ -86,23 +88,22 @@ class DogfightEnv(Env):
 
         try:
             planes = df.get_planes_list()
-        except AttributeError:
+        except:
             print('Connecting...')
             df.connect(host, int(port))
             time.sleep(2)
             planes = df.get_planes_list()
 
         df.disable_log()
+
+        for i in planes:
+            df.reset_machine(i)
         
         self.planeID = planes[self.plane_slot]
         self.enemyID = planes[self.enemy_slot]
 
         missiles = df.get_machine_missiles_list(self.enemyID)
         self.missileID = missiles[self.missile_slot]
-
-        for i in planes:
-            df.reset_machine(i)
-        
 
         df.set_plane_thrust(self.enemyID, 1)
         df.set_plane_thrust(self.planeID, 1)
@@ -111,13 +112,24 @@ class DogfightEnv(Env):
 
         df.set_renderless_mode(True)
 
-        starts_on_carrier(
-            df=df, 
-            planeID=self.planeID,
-            enemyID=self.enemyID,
-            missile_slot=self.missile_slot,
-            missileID=self.missileID
-        )
+        if self.initial_state == 'carrier':
+            start_on_carrier(
+                df=df, 
+                planeID=self.planeID,
+                enemyID=self.enemyID,
+                missile_slot=self.missile_slot,
+                missileID=self.missileID,
+            )
+        elif self.initial_state == 'air':
+            start_in_sky(
+                df=df, 
+                planeID=self.planeID,
+                enemyID=self.enemyID,
+                missile_slot=self.missile_slot,
+                missileID=self.missileID,
+            )
+        else:
+            raise Exception('Invalid initial state {}!'.format(self.initial_state))
 
         self.action_space, self.action_type = action_space(
             pitch_enable=True,
@@ -146,9 +158,8 @@ class DogfightEnv(Env):
         self,
         prop
     ):
-        plane_state = df.get_plane_state(self.planeID)
-        missile_state = df.get_missile_state(self.missileID)
         if prop == 'position':
+            plane_state = df.get_plane_state(self.planeID)
             return [
                 plane_state['position'][0],
                 plane_state['position'][2],
@@ -156,6 +167,7 @@ class DogfightEnv(Env):
             ]
         elif prop == 'positionEci':
             warnings.warn('Dogfight simulation environments have no global data!')
+            plane_state = df.get_plane_state(self.planeID)
             return [
                 plane_state['position'][0],
                 plane_state['position'][2],
@@ -163,24 +175,28 @@ class DogfightEnv(Env):
             ]
         elif prop == 'positionEcef':
             warnings.warn('Dogfight simulation environments have no global data!')
+            plane_state = df.get_plane_state(self.planeID)
             return [
                 plane_state['position'][0],
                 plane_state['position'][2],
                 plane_state['position'][1],
             ]
         elif prop == 'attitudeRad':
+            plane_state = df.get_plane_state(self.planeID)
             return [
                 plane_state['heading'] / 180 * np.pi,
                 plane_state['pitch_attitude'] / 180 * np.pi,
                 plane_state['roll_attitude'] / 180 * np.pi,
             ]
         elif prop == 'attitudeDeg':
+            plane_state = df.get_plane_state(self.planeID)
             return [
                 plane_state['heading'],
                 plane_state['pitch_attitude'],
                 plane_state['roll_attitude'],
             ]
         elif prop == 'pose':
+            plane_state = df.get_plane_state(self.planeID)
             return [
                 plane_state['position'][0],
                 plane_state['position'][2],
@@ -190,6 +206,7 @@ class DogfightEnv(Env):
                 plane_state['roll_attitude'],
             ]
         elif prop == 'poseNorm':
+            plane_state = df.get_plane_state(self.planeID)
             return [
                 plane_state['position'][0] / 100,
                 plane_state['position'][2] / 100,
@@ -200,12 +217,14 @@ class DogfightEnv(Env):
             ]
         elif prop == 'velocity':
             warnings.warn('三个值为速度在欧拉角上的分量, 与JSBSim中的速度不同')
+            plane_state = df.get_plane_state(self.planeID)
             return [
                 plane_state['horizontal_speed'],
                 plane_state['linear_speed'],
                 -plane_state['vertical_speed'],
             ]
         elif prop == 'poseMissile':
+            missile_state = df.get_missile_state(self.missileID)
             return [
                 missile_state['position'][0],
                 missile_state['position'][2],
@@ -215,6 +234,7 @@ class DogfightEnv(Env):
                 missile_state['Euler_angles'][2],
             ]
         elif prop == 'poseMissleNorm':
+            missile_state = df.get_missile_state(self.missileID)
             return [
                 missile_state['position'][0] / 100,
                 missile_state['position'][2] / 100,
@@ -224,6 +244,8 @@ class DogfightEnv(Env):
                 missile_state['Euler_angles'][2] * 100,
             ]
         elif prop == 'azimuthRel':
+            plane_state = df.get_plane_state(self.planeID)
+            missile_state = df.get_missile_state(self.missileID)
             azimuth = [
                 missile_state['position'][0] - plane_state['position'][0],
                 missile_state['position'][2] - plane_state['position'][2],
@@ -310,7 +332,7 @@ class DogfightEnv(Env):
 
         df.set_machine_custom_physics_mode(self.flare_id, True)
 
-        df.set_missile_life_delay(self.flare_id, 10)
+        df.set_missile_life_delay(self.flare_id, 5)
 
         df.update_scene()
 
@@ -455,8 +477,8 @@ class DogfightEnv(Env):
 
         terminate = True if terminate else False
         
-        plane_state = df.get_plane_state(self.planeID)
-        missile_state = df.get_missile_state(self.missileID)
+        # plane_state = df.get_plane_state(self.planeID)
+        # missile_state = df.get_missile_state(self.missileID)
 
         ob = self.getObservation()
 
@@ -484,6 +506,7 @@ class DogfightEnv(Env):
             missile_slot=self.missile_slot,
             rendering=self.rendering,
             record_status=self.record_status,
+            initial_state=self.initial_state,
             throttle_enable=self.throttle_enable,
             flare_enable=self.flare_enable,
             ego_pose_enable = self.ego_pose_enable,

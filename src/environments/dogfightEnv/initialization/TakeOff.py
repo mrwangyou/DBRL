@@ -1,5 +1,5 @@
 
-def starts_on_carrier(
+def start_on_carrier(
     df,
     planeID,
     enemyID,
@@ -47,7 +47,24 @@ def starts_on_carrier(
     df.set_missile_life_delay(missileID, 30)
 
 
+def start_in_sky(
+    df, 
+    planeID,
+    enemyID,
+    missile_slot,
+    missileID,
+):
+    t = 0
+    while t < 1:
+        plane_state = df.get_plane_state(planeID)
+        df.update_scene()
+        t = plane_state["thrust_level"]
+    df.activate_post_combustion(planeID)
 
+    df.fire_missile(enemyID, missile_slot)
+
+    df.set_missile_target(missileID, planeID)
+    df.set_missile_life_delay(missileID, 10)
 
 
 

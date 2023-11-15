@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument('--test', action='store_true', help='specifies the running mode of DBRL')
     parser.add_argument('--timesteps', type=int, default=10000000, help='specifies the training timesteps')
     parser.add_argument('--model', choices=['DDPG', 'TD3', 'SAC'], default='SAC', help='specifies the DRL model used in algorithm training')
+    parser.add_argument('--initial-state', choices=['air', 'carrier'], default='carrier', help='')
     # parser.add_argument('--modelPath', default=None, help='specifies the pre-trained model. Only works when --train is specified')
     parser.add_argument('--record-result', action='store_true', help='specifies to record the evaluating result of DBRL. Only works when --test is specified')
     parser.add_argument('--record-status', type=int, default=0, help='specifies the recording period for aircraft status recording during test flights. Only works when --test is specified')
@@ -49,6 +50,7 @@ env = gym.make(
     # rendering=args.realtime,
     rendering=False,
     record_status=args.record_status,
+    initial_state=args.initial_state,
     throttle_enable=args.throttle_enable,
     flare_enable=args.flare_enable,
     ego_pose_enable=True,
