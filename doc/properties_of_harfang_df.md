@@ -97,6 +97,10 @@ Example:
         'life_time': 4.133333333333324
     }
 
+## df.get_plane_state(self.planeID)['timestamp']
+
+Returns an `int`, recording the timestamp elapsed since the simulation was started.
+
 ## df.get_plane_state(self.planeID)['position']
 
 Return a `list[3]=[x, z, y]`, which is the position of plane *planeID*. The coordinate system is shown in the following figure.
@@ -109,17 +113,29 @@ Return a `float` (degree). The value is shown in the following figure.
 
 ![pitch_attitude](../images/pitch_attitude.png)
 
+## df.get_missile_state(self.missileID)['pitch_attitude']
+
+Same to `df.get_plane_state(self.planeID)['pitch_attitude']` except changing each $0 \degree$ into approximately $\pm 75 \degree$. Besides, it seems nonlinear. 
+
 ## df.get_plane_state(self.planeID)['roll_attitude']
 
 Return a `float` (degree). The value is shown in the following figure. **This is not a bijection.**
 
 ![pitch_attitude](../images/roll_attitude.png)
 
+## df.get_missile_state(self.missileID)['roll_attitude']
+
+Same to `df.get_plane_state(self.planeID)['roll_attitude']` except changing each $0 \degree$ into approximately $\pm 75 \degree$. Besides, it seems nonlinear. 
+
 ## df.get_plane_state(self.planeID)['heading']
 
 Return a `float` (degree). The value is shown in the following figure.
 
 ![pitch_attitude](../images/heading.png)
+
+## df.get_missile_state(self.missileID)['heading']
+
+Same to `df.get_plane_state(self.planeID)['heading']`
 
 ## df.get_plane_state(self.planeID)['horizontal_speed']
 

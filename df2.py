@@ -14,23 +14,31 @@ def parse_args():
     parser.add_argument('--task', choices=['evade', 'dogfight'], required=True, help='specifies the simulation task')
     parser.add_argument('--host', default='10.184.0.0', help='specifies Harfang host id')
     parser.add_argument('--port', default='50888', help='specifies Harfang port id')
-    parser.add_argument('--plane-slot', default=1, help='specifies the ego plane')
-    parser.add_argument('--enemy-slot', default=3, help='specifies the enemy plane')
-    parser.add_argument('--missile-slot', default=1, help='specifies the missile to escape from')
+    parser.add_argument('--plane-slot', type=int, default=1, help='specifies the ego plane')
+    parser.add_argument('--enemy-slot', type=int, default=3, help='specifies the enemy plane')
+    parser.add_argument('--missile-slot', type=int, default=1, help='specifies the missile to escape from')
     parser.add_argument('--realtime', action='store_true', help='specifies to run in real world time while training. Only works when --trian is specified')
     parser.add_argument('--train', action='store_true', help='specifies the running mode of DBRL')
     parser.add_argument('--test', action='store_true', help='specifies the running mode of DBRL')
-    parser.add_argument('--timesteps', type=int, default=10000000, help='specifies the training timesteps. Only works when --train is specified')
+    parser.add_argument('--timesteps', type=int, default=10000000, help='specifies the training timesteps')
     parser.add_argument('--model', choices=['DDPG', 'TD3', 'SAC'], default='SAC', help='specifies the DRL model used in algorithm training')
+    parser.add_argument('--initial-state', choices=['air', 'carrier'], default='carrier', help='')
     # parser.add_argument('--modelPath', default=None, help='specifies the pre-trained model. Only works when --train is specified')
     parser.add_argument('--record-result', action='store_true', help='specifies to record the evaluating result of DBRL. Only works when --test is specified')
     parser.add_argument('--record-status', type=int, default=0, help='specifies the recording period for aircraft status recording during test flights. Only works when --test is specified')
+    parser.add_argument('--throttle-enable', action='store_true', help='specifies whether to enable the throttle control')
     parser.add_argument('--flare-enable', action='store_true', help='specifies whether to enable the decoy flare')
+    parser.add_argument('--ego-pose-enable', action='store_true', help='')
+    parser.add_argument('--oppo-pose-enable', action='store_true', help='')
+    parser.add_argument('--missile-pose-enable', action='store_true', help='')
+    parser.add_argument('--missile-relative-azimuth-enable', action='store_true', help='')
     args = parser.parse_args()
     return args
 
 args = parse_args()
 
+msg = "{}_{}_{}".format(args.task, args.model, args.timesteps)
+print(msg)
 
 env = gym.make(
     "DBRLDogfight-v0" if args.task == 'evade' else "DBRLDf-v0",
@@ -39,15 +47,24 @@ env = gym.make(
     plane_slot=args.plane_slot,
     enemy_slot=args.enemy_slot,
     missile_slot=args.missile_slot,
-    rendering=True if args.realtime else False,
+    # rendering=args.realtime,
+    rendering=False,
     record_status=args.record_status,
+    initial_state=args.initial_state,
+    throttle_enable=args.throttle_enable,
     flare_enable=args.flare_enable,
+    ego_pose_enable=True,
+    oppo_pose_enable=False,
+    missile_pose_enable=True,
+    missile_relative_azimuth_enable=True,
+    msg=msg
 )
 
 n_actions = env.action_space.shape[-1]
-action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
-
-msg = "{}_{}_{}".format(args.task, args.model, args.timesteps)
+action_noise = NormalActionNoise(
+    mean=np.zeros(n_actions), 
+    sigma=0.1 * np.ones(n_actions)
+)
 
 model = eval(args.model)(
     "MlpPolicy",

@@ -32,7 +32,7 @@ Replace `{DBRL}` with the path of this project.
 
 > If you want to use 7z command in the command line, add your 7zip path to environment variables *Path* on Windows. Alternatively, you can also unzip the folder manually.
 
-> If you want to build the Gym environment with `Gym.make`, you need to replace `import socket_lib` with `from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib` in `{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`. We are trying to find ways to simplify this step.
+<!-- > If you want to build the Gym environment with `Gym.make`, you need to replace `import socket_lib` with `from gym.envs.dogfightEnv.dogfight_sandbox_hg2.network_client_example import socket_lib` in `{DBRL}/src/environments/dogfightEnv/dogfight_sandbox_hg/network_client_example/dogfight_client.py`. We are trying to find ways to simplify this step. -->
 
 If you want to visualize the aircraft model in FlightGear while running the FDM with the JSBSim executable, please download FlightGear following the instructions on the <a href="https://www.flightgear.org/">FlightGear website</a>. If you need to visualize the two aircrafts in an engagement simultaneously, please copy two `{JSBSim}/data_output/flightgear.xml`, name them `flightgear{1/2}.xml`, and replace `5550` in line 18 of `flightgear2.xml` to `5551`. `{JSBSim}` represents the path of Python JSBSim. You could run the code below to get the default JSBSim path.
 
@@ -181,28 +181,68 @@ def getProperty(
 ```
 
 ---
+---
 
 DBRL-Dogfight simulate the situation when the plane is confronted with a missile. The agent needs to take actions to avoid the attack of the missile.
 
 The action space of DBRL-Dogfight is:
 
 ```python
-gym.spaces.Box(
-    low=np.array([0, -1, -1, -1]),
-    high=np.array([1, 1, 1, 1])
+if pitch_enable:
+    action_infimum = np.append(action_infimum, -1)
+    action_supermum = np.append(action_supermum, 1)
+if roll_enable:
+    action_infimum = np.append(action_infimum, -1)
+    action_supermum = np.append(action_supermum, 1)
+if yaw_enable:
+    action_infimum = np.append(action_infimum, -1)
+    action_supermum = np.append(action_supermum, 1)
+if flaps_enable:
+    action_infimum = np.append(action_infimum, 0)
+    action_supermum = np.append(action_supermum, 1)
+if throttle_enable:
+    action_infimum = np.append(action_infimum, 0)
+    action_supermum = np.append(action_supermum, 1)
+if flare_enable:
+    action_infimum = np.append(action_infimum, 0)
+    action_supermum = np.append(action_supermum, 1)
+action = Box(
+    low=action_infimum,
+    high=action_supermum,
 )
 ```
-which represents the control of flaps, pitch, roll and yaw.
+which is the control of pitch, roll, yaw, flaps, throttle and flare.
 
 The observation space is:
 
 ```python
-gym.spaces.Box(
-    low=np.array([-300, -300, -1, 0, -360, -360, -300, -300, -1, -315, -315, -315]),
-    high=np.array([300, 300, 200, 360, 360, 360, 300, 300, 200, 315, 315, 315])
+if ego_plane_position:
+    observation_infimum = np.append(observation_infimum, [-300, -300, -1])
+    observation_supermum = np.append(observation_supermum, [300, 300, 200])
+if ego_plane_attitude:
+    observation_infimum = np.append(observation_infimum, [0, -360, -360])
+    observation_supermum = np.append(observation_supermum, [360, 360, 360])
+if oppo_plane_position:
+    observation_infimum = np.append(observation_infimum, [-300, -300, -1])
+    observation_supermum = np.append(observation_supermum, [300, 300, 200])
+if oppo_plane_attitude:
+    observation_infimum = np.append(observation_infimum, [0, -360, -360])
+    observation_supermum = np.append(observation_supermum, [360, 360, 360])
+if missile_position:
+    observation_infimum = np.append(observation_infimum, [-300, -300, -1])
+    observation_supermum = np.append(observation_supermum, [300, 300, 200])
+if missile_attitude:
+    observation_infimum = np.append(observation_infimum, [-315, -315, -315])
+    observation_supermum = np.append(observation_supermum, [315, 315, 315])
+if missile_relative_azimuth:
+    observation_infimum = np.append(observation_infimum, [-1, -1, -1])
+    observation_supermum = np.append(observation_supermum, [1, 1, 1])
+observation = Box(
+    low=observation_infimum,
+    high=observation_supermum,
 )
 ```
-which represents the X-coordinate(÷100), Y-coordinate(÷100), Z-coordinate(÷50), heading, pitch(×4) and roll(×4) of the plane, and the X-coordinate(÷100), Y-coordinate(÷100), Z-coordinate(÷50), heading(×100), pitch(×100) and roll(×100) of the missile.
+which represents the X-coordinate(÷100), Y-coordinate(÷100), Z-coordinate(÷50), heading, pitch(×4) and roll(×4) of the airplane, and the X-coordinate(÷100), Y-coordinate(÷100), Z-coordinate(÷50), heading(×100), pitch(×100) and roll(×100) of the missile, as well as the azimuth of the missil relative to the airplane.
 
 DogfightEnv needs to be connected to Dogfight 2 while simulating. Its constructor function takes host and port as input.
 
@@ -215,8 +255,17 @@ class DogfightEnv(Env):
         port='50888',
         plane_slot=1,
         enemy_slot=3,
-        missile_slot=0,
+        missile_slot=1,
         rendering=False,
+        record_status=0,
+        initial_state='carrier',
+        throttle_enable=False,
+        flare_enable=False,
+        ego_pose_enable=True,
+        oppo_pose_enable=False,
+        missile_pose_enable=True,
+        missile_relative_azimuth_enable=False,
+        msg=None,
     ) -> None:
 ```
 
@@ -226,13 +275,13 @@ You need to start the Dogfight 2 at first and choose the Network mode mission. T
 </details>
 
 
-## <div align="center">Future works</div>
+<!-- ## <div align="center">Future works</div>
 
 1. Offer various action spaces, observation spaces and reward functions to support different RL methods.
 
 2. Reproduce air combat baseline methods from international conference or journal.
 
-3. Output flight data in various forms to support visualization in different software like Tacview.
+3. Output flight data in various forms to support visualization in different software like Tacview. -->
 
 
 ## <div align="center">Welcome PR</div>
