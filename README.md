@@ -62,52 +62,53 @@ action_space = Box(
 
 
 # Dogfight 2
+if ego_plane_position:
+    observation_infimum = np.append(observation_infimum, [-300, -300, -1])
+    observation_supermum = np.append(observation_supermum, [300, 300, 200])
+if ego_plane_attitude:
+    observation_infimum = np.append(observation_infimum, [0, -360, -360])
+    observation_supermum = np.append(observation_supermum, [360, 360, 360])
+if oppo_plane_position:
+    observation_infimum = np.append(observation_infimum, [-300, -300, -1])
+    observation_supermum = np.append(observation_supermum, [300, 300, 200])
+if oppo_plane_attitude:
+    observation_infimum = np.append(observation_infimum, [0, -360, -360])
+    observation_supermum = np.append(observation_supermum, [360, 360, 360])
+if missile_position:
+    observation_infimum = np.append(observation_infimum, [-300, -300, -1])
+    observation_supermum = np.append(observation_supermum, [300, 300, 200])
+if missile_attitude:
+    observation_infimum = np.append(observation_infimum, [-315, -315, -315])
+    observation_supermum = np.append(observation_supermum, [315, 315, 315])
+if missile_relative_azimuth:
+    observation_infimum = np.append(observation_infimum, [-1, -1, -1])
+    observation_supermum = np.append(observation_supermum, [1, 1, 1])
 observation_space = Box(
-    low=np.array([  # simple normalized
-        # Plane
-        -300,  # x / 100
-        -300,  # y / 100
-        -1,    # z / 50
-        0,     # heading
-        -360,  # pitch_attitude * 4
-        -360,  # roll_attitude * 4
-        # Missile
-        -300,  # x / 100
-        -300,  # y / 100
-        -1,    # z / 50
-        -315,  # heading * 100
-        -315,  # pitch_attitude * 100
-        -315,  # roll_attitude * 100
-    ]),
-    high=np.array([
-        300,
-        300,
-        200,
-        360,
-        360,
-        360,
-        300,
-        300,
-        200,
-        315,
-        315,
-        315,
-    ])
+    low=observation_infimum,
+    high=observation_supermum,
 )
 
+if pitch_enable:
+    action_infimum = np.append(action_infimum, -1)
+    action_supermum = np.append(action_supermum, 1)
+if roll_enable:
+    action_infimum = np.append(action_infimum, -1)
+    action_supermum = np.append(action_supermum, 1)
+if yaw_enable:
+    action_infimum = np.append(action_infimum, -1)
+    action_supermum = np.append(action_supermum, 1)
+if flaps_enable:
+    action_infimum = np.append(action_infimum, 0)
+    action_supermum = np.append(action_supermum, 1)
+if throttle_enable:
+    action_infimum = np.append(action_infimum, 0)
+    action_supermum = np.append(action_supermum, 1)
+if flare_enable:
+    action_infimum = np.append(action_infimum, 0)
+    action_supermum = np.append(action_supermum, 1)
 action_space = Box(
-    low=np.array([
-        0,  # Flaps
-        -1,  # Pitch
-        -1,  # Roll
-        -1,  # Yaw
-    ]),
-    high=np.array([
-        1,
-        1,
-        1,
-        1,
-    ]),
+    low=action_infimum,
+    high=action_supermum,
 )
 
 ```
