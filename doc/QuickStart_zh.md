@@ -213,7 +213,7 @@ if throttle_enable:
 if flare_enable:
     action_infimum = np.append(action_infimum, 0)
     action_supermum = np.append(action_supermum, 1)
-action = Box(
+action_space = Box(
     low=action_infimum,
     high=action_supermum,
 )
@@ -244,7 +244,7 @@ if missile_attitude:
 if missile_relative_azimuth:
     observation_infimum = np.append(observation_infimum, [-1, -1, -1])
     observation_supermum = np.append(observation_supermum, [1, 1, 1])
-observation = Box(
+observation_space = Box(
     low=observation_infimum,
     high=observation_supermum,
 )
