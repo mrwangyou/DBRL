@@ -1,6 +1,7 @@
 
 def start_on_carrier(
     df,
+    task,
     planeID,
     enemyID,
     missile_slot,
@@ -38,17 +39,24 @@ def start_on_carrier(
     
     df.set_plane_yaw(planeID, 1)
 
-    missiles = df.get_machine_missiles_list(enemyID)
-    missileID = missiles[missile_slot]
+    if task == 'evade':
+        # missiles = df.get_machine_missiles_list(enemyID)
+        # missileID = missiles[missile_slot]
 
-    df.fire_missile(enemyID, missile_slot)
+        df.fire_missile(enemyID, missile_slot)
 
-    df.set_missile_target(missileID, planeID)
-    df.set_missile_life_delay(missileID, 30)
+        df.set_missile_target(missileID, planeID)
+        df.set_missile_life_delay(missileID, 30)
+
+    elif task == 'dogfight':
+
+        df.set_target_id(enemyID, planeID)
+        df.activate_IA(enemyID)
 
 
 def start_in_sky(
-    df, 
+    df,
+    task,
     planeID,
     enemyID,
     missile_slot,
@@ -61,10 +69,17 @@ def start_in_sky(
         t = plane_state["thrust_level"]
     df.activate_post_combustion(planeID)
 
-    df.fire_missile(enemyID, missile_slot)
+    if task == 'evade':
 
-    df.set_missile_target(missileID, planeID)
-    df.set_missile_life_delay(missileID, 10)
+        df.fire_missile(enemyID, missile_slot)
+
+        df.set_missile_target(missileID, planeID)
+        df.set_missile_life_delay(missileID, 10)
+
+    elif task == 'dogfight':
+
+        df.set_target_id(enemyID, planeID)
+        df.activate_IA(enemyID)
 
 
 

@@ -53,6 +53,7 @@ class DogfightEnv(Env):
         self,
         host='10.184.0.0',
         port='50888',
+        task='evade',
         plane_slot=1,
         enemy_slot=3,
         missile_slot=1,
@@ -70,6 +71,7 @@ class DogfightEnv(Env):
 
         self.host = host
         self.port = port
+        self.task = task
         self.nof = 0
         self.rendering = rendering
         self.plane_slot = plane_slot
@@ -98,6 +100,8 @@ class DogfightEnv(Env):
 
         for i in planes:
             df.reset_machine(i)
+
+        #~~~~~~~~~~~~~~~~~~~~ pin ~~~~~~~~~~~~~~~~~~~~
         
         self.planeID = planes[self.plane_slot]
         self.enemyID = planes[self.enemy_slot]
@@ -114,7 +118,8 @@ class DogfightEnv(Env):
 
         if self.initial_state == 'carrier':
             start_on_carrier(
-                df=df, 
+                df=df,
+                task=self.task,
                 planeID=self.planeID,
                 enemyID=self.enemyID,
                 missile_slot=self.missile_slot,
@@ -122,7 +127,8 @@ class DogfightEnv(Env):
             )
         elif self.initial_state == 'air':
             start_in_sky(
-                df=df, 
+                df=df,
+                task=self.task,
                 planeID=self.planeID,
                 enemyID=self.enemyID,
                 missile_slot=self.missile_slot,
@@ -181,6 +187,13 @@ class DogfightEnv(Env):
                 plane_state['position'][2],
                 plane_state['position'][1],
             ]
+        elif prop == 'positionEnemy':
+            enemy_state = df.get_plane_state(self.enemyID)
+            return [
+                enemy_state['position'][0],
+                enemy_state['position'][2],
+                enemy_state['position'][1],
+            ]
         elif prop == 'attitudeRad':
             plane_state = df.get_plane_state(self.planeID)
             return [
@@ -188,12 +201,26 @@ class DogfightEnv(Env):
                 plane_state['pitch_attitude'] / 180 * np.pi,
                 plane_state['roll_attitude'] / 180 * np.pi,
             ]
+        elif prop == 'attitudeRadEnemy':
+            enemy_state = df.get_plane_state(self.enemyID)
+            return [
+                enemy_state['heading'] / 180 * np.pi,
+                enemy_state['pitch_attitude'] / 180 * np.pi,
+                enemy_state['roll_attitude'] / 180 * np.pi,
+            ]
         elif prop == 'attitudeDeg':
             plane_state = df.get_plane_state(self.planeID)
             return [
                 plane_state['heading'],
                 plane_state['pitch_attitude'],
                 plane_state['roll_attitude'],
+            ]
+        elif prop == 'attitudeDegEnemy':
+            enemy_state = df.get_plane_state(self.enemyID)
+            return [
+                enemy_state['heading'],
+                enemy_state['pitch_attitude'],
+                enemy_state['roll_attitude'],
             ]
         elif prop == 'pose':
             plane_state = df.get_plane_state(self.planeID)
@@ -205,6 +232,16 @@ class DogfightEnv(Env):
                 plane_state['pitch_attitude'],
                 plane_state['roll_attitude'],
             ]
+        elif prop == 'poseEnemy':
+            enemy_state = df.get_plane_state(self.enemyID)
+            return [
+                enemy_state['position'][0],
+                enemy_state['position'][2],
+                enemy_state['position'][1],
+                enemy_state['heading'],
+                enemy_state['pitch_attitude'],
+                enemy_state['roll_attitude'],
+            ]
         elif prop == 'poseNorm':
             plane_state = df.get_plane_state(self.planeID)
             return [
@@ -215,6 +252,16 @@ class DogfightEnv(Env):
                 plane_state['pitch_attitude'] * 4,
                 plane_state['roll_attitude'] * 4,
             ]
+        elif prop == 'poseEnemyNorm':
+            enemy_state = df.get_plane_state(self.enemyID)
+            return [
+                enemy_state['position'][0] / 100,
+                enemy_state['position'][2] / 100,
+                enemy_state['position'][1] / 50,
+                enemy_state['heading'],
+                enemy_state['pitch_attitude'] * 4,
+                enemy_state['roll_attitude'] * 4,
+            ]
         elif prop == 'velocity':
             warnings.warn('三个值为速度在欧拉角上的分量, 与JSBSim中的速度不同')
             plane_state = df.get_plane_state(self.planeID)
@@ -222,6 +269,14 @@ class DogfightEnv(Env):
                 plane_state['horizontal_speed'],
                 plane_state['linear_speed'],
                 -plane_state['vertical_speed'],
+            ]
+        elif prop == 'velocityEnemy':
+            warnings.warn('三个值为速度在欧拉角上的分量, 与JSBSim中的速度不同')
+            enemy_state = df.get_plane_state(self.enemyID)
+            return [
+                enemy_state['horizontal_speed'],
+                enemy_state['linear_speed'],
+                -enemy_state['vertical_speed'],
             ]
         elif prop == 'poseMissile':
             missile_state = df.get_missile_state(self.missileID)
@@ -259,7 +314,7 @@ class DogfightEnv(Env):
         else:
             raise Exception("Property {} doesn't exist!".format(prop))
 
-    def getDistance(self):
+    def getMissileDistance(self):
         plane_state = df.get_plane_state(self.planeID)
         missile_state = df.get_missile_state(self.missileID)
 
@@ -267,17 +322,112 @@ class DogfightEnv(Env):
         (plane_state['position'][1] - missile_state['position'][1]) ** 2 +\
         (plane_state['position'][2] - missile_state['position'][2]) ** 2) ** .5
 
+
+    def getEnemyDistanceVector(self, ego):
+
+        positionEci1 = self.getProperty('position')
+        positionEci2 = self.getProperty('positionEnemy')
+
+        if ego == 1:
+            return np.array(positionEci2) - np.array(positionEci1)
+        elif ego == 2:
+            return np.array(positionEci1) - np.array(positionEci2)
+        else:
+            raise Exception("Plane {} doesn\'t exist".format(ego))
+
+    def getEnemyDistance(self):
+        plane_state = df.get_plane_state(self.planeID)
+        enemy_state = df.get_plane_state(self.enemyID)
+
+        distance1 = ((plane_state['position'][0] - enemy_state['position'][0]) ** 2 +\
+        (plane_state['position'][1] - enemy_state['position'][1]) ** 2 +\
+        (plane_state['position'][2] - enemy_state['position'][2]) ** 2) ** .5
+
+        distance2 = np.linalg.norm(self.getEnemyDistanceVector(1))
+        distance3 = np.linalg.norm(self.getEnemyDistanceVector(2))
+
+        try:
+            assert np.abs(distance1 - distance2) < 1, [distance1, distance2, np.abs(distance1 - distance2), np.abs(distance1 - distance2) < 1]
+            assert np.abs(distance3 - distance2) < 1, [distance3, distance2, np.abs(distance3 - distance2), np.abs(distance3 - distance2) < 1]
+        except:
+            warnings.warn('飞机之间距离计算误差较大！')
+
+        return distance2
+    
+    def getDamage(self, ego):
+        attitude1 = self.getProperty("attitudeRad")
+        attitude2 = self.getProperty("attitudeRadEnemy")
+
+        theta_1 = np.pi / 2 - attitude1[1]
+        psi_1 = np.pi * 2 - ((attitude1[0] - np.pi / 2) % (np.pi * 2))
+        heading_1 = np.array([
+            np.sin(theta_1) * np.cos(psi_1),
+            np.sin(theta_1) * np.sin(psi_1),
+            np.cos(theta_1)
+        ])
+
+        theta_2 = np.pi / 2 - attitude2[1]
+        psi_2 = np.pi * 2 - (attitude2[0] - np.pi / 2) % (np.pi * 2)
+        heading_2 = np.array([
+            np.sin(theta_2) * np.cos(psi_2),
+            np.sin(theta_2) * np.sin(psi_2),
+            np.cos(theta_2)
+        ])
+
+        if 500 <= self.getEnemyDistance() <= 3000:
+
+            angle1 = np.arccos(
+                np.dot(self.getEnemyDistanceVector(ego=1), heading_1) / 
+                (self.getEnemyDistance() * np.linalg.norm(heading_1))
+            )
+
+            if -1 <= angle1 / np.pi * 180 <= 1:
+                if ego == 2:
+                    return (3000 - self.getEnemyDistance()) / 2500 / 120
+
+            angle2 = np.arccos(
+                np.dot(self.getEnemyDistanceVector(ego=2), heading_2) / 
+                (self.getEnemyDistance() * np.linalg.norm(heading_2))
+            )
+
+            if -1 <= angle2 / np.pi * 180 <= 1:
+                if ego == 1:
+                    return (3000 - self.getEnemyDistance()) / 2500 / 120
+            
+            # print("angle1 {}\tangle2 {}".format(angle1 / np.pi * 180, angle2 / np.pi * 180))
+
+        return 0
+
+    def damage(self, ego):
+        if ego == 1:
+            df.set_health(self.planeID, df.get_health(self.planeID)['health_level'] - self.getDamage(1))
+        if ego == 2:
+            df.set_health(self.enemyID, df.get_health(self.enemyID)['health_level'] - self.getDamage(2))
+
     def getHP(self):
         return df.get_health(self.planeID)['health_level']
+    
+    def getHPEnemy(self):
+        return df.get_health(self.enemyID)['health_level']
 
     def terminate(self):
-        if not df.get_missile_state(self.missileID)['active']:
-            if self.getHP() >= .9:
-                return 1
+        if self.task == 'evade':
+            if not df.get_missile_state(self.missileID)['active']:
+                if self.getHP() >= .9:
+                    return 1
+                else:
+                    return -1
             else:
+                return 0
+        elif self.task == 'dogfight':
+            if self.getHP() <= 0.0 and self.getHPEnemy() > 0.0:  # Oppo
                 return -1
-        else:
-            return 0
+            elif self.getHP() > 0.0 and self.getHPEnemy() <= 0.0:  # Ego
+                return 1
+            elif self.getHP() <= 0.0 and self.getHPEnemy() <= 0.0:  # Tie
+                return 2
+            else:
+                return 0
 
     def setProperty(
         self,
@@ -304,7 +454,7 @@ class DogfightEnv(Env):
                     eval(value[1:])(self.planeID, float(action[idx]))
 
                 elif value == 'Flare' and not self.flare_active:
-                    if float(action[idx]) >= 0.99:
+                    if float(action[idx]) >= 0.99 and self.getMissileDistance() <= 1000:
                         self.flare_active = True
                         self.setFlare()
 
@@ -375,7 +525,11 @@ class DogfightEnv(Env):
             self.z = self.z_init + self.v_init * self.flare_active_time
             
             # Compute speed vector, used by missile engine smoke
-            self.flare_speed_vector = [(self.x-self.flare_matrix[9]) / frame_time_step, (self.y - self.flare_matrix[10]) / frame_time_step, (self.z - self.flare_matrix[11]) / frame_time_step]
+            self.flare_speed_vector = [
+                (self.x - self.flare_matrix[9]) / frame_time_step, 
+                (self.y - self.flare_matrix[10]) / frame_time_step, 
+                (self.z - self.flare_matrix[11]) / frame_time_step
+            ]
 
             self.flare_active_time += frame_time_step
         
@@ -442,6 +596,9 @@ class DogfightEnv(Env):
         df.update_scene()
         self.nof += 1
 
+        if self.task == 'dogfight':
+            self.damage(2)
+
         if self.record_status:
             if self.nof == 1:
                 path = r'./log/'
@@ -466,26 +623,37 @@ class DogfightEnv(Env):
 
         terminate = self.terminate()
 
-        if terminate == 1:
-            reward = 50
-        elif terminate == -1:
-            reward = -50
-        else:
-            reward = .1
-            if self.getHP() <= .1:
-                reward = -1
+        if self.task == 'evade':
+            if terminate == 1:
+                reward = 50
+            elif terminate == -1:
+                reward = -50
+            else:
+                reward = .1
+                if self.getHP() <= .1:
+                    reward = -1
+        elif self.task == 'dogfight':
+            if terminate == 1:
+                reward = 50
+            elif terminate == -1:
+                reward = 0
+            elif terminate == 2:
+                reward = 0
+            else:
+                reward = 0
 
-        terminate = True if terminate else False
+        terminate = bool(terminate)
         
         # plane_state = df.get_plane_state(self.planeID)
         # missile_state = df.get_missile_state(self.missileID)
 
         ob = self.getObservation()
 
-        if self.rendering:
-            time.sleep(
-                max(0, df.get_timestep()['timestep'] - (time.time() - t_begin))
-            )
+        # ?~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # if self.rendering:
+        time.sleep(
+            max(0, df.get_timestep()['timestep'] - (time.time() - t_begin))
+        )
 
         return ob, reward, terminate, {}
 
@@ -501,6 +669,7 @@ class DogfightEnv(Env):
         self.__init__(
             host=self.host,
             port=self.port,
+            task=self.task,
             plane_slot=self.plane_slot,
             enemy_slot=self.enemy_slot,
             missile_slot=self.missile_slot,

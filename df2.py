@@ -41,9 +41,10 @@ msg = "{}_{}_{}".format(args.task, args.model, args.timesteps)
 print(msg)
 
 env = gym.make(
-    "DBRLDogfight-v0" if args.task == 'evade' else "DBRLDf-v0",
+    "DBRLDogfight-v0",
     host=args.host,
     port=args.port,
+    task=args.task,
     plane_slot=args.plane_slot,
     enemy_slot=args.enemy_slot,
     missile_slot=args.missile_slot,
